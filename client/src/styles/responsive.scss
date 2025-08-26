@@ -1,0 +1,545 @@
+// ======================================
+//   RESPONSIVE DESIGN - MOBILE FIRST
+// ======================================
+
+// Variables de breakpoints
+$mobile: 480px;
+$tablet: 768px;
+$desktop: 1024px;
+$large-desktop: 1280px;
+
+// Mixins para media queries
+@mixin mobile {
+  @media (max-width: #{$mobile}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: #{$mobile + 1px}) and (max-width: #{$tablet}) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: #{$tablet + 1px}) {
+    @content;
+  }
+}
+
+@mixin large-desktop {
+  @media (min-width: #{$large-desktop}) {
+    @content;
+  }
+}
+
+// ======================================
+//   UTILIDADES RESPONSIVAS
+// ======================================
+
+// Ocultar/mostrar elementos por breakpoint
+.hide-mobile {
+  @include mobile {
+    display: none !important;
+  }
+}
+
+.hide-tablet {
+  @include tablet {
+    display: none !important;
+  }
+}
+
+.hide-desktop {
+  @include desktop {
+    display: none !important;
+  }
+}
+
+.show-mobile {
+  display: none !important;
+  @include mobile {
+    display: block !important;
+  }
+}
+
+.show-tablet {
+  display: none !important;
+  @include tablet {
+    display: block !important;
+  }
+}
+
+.show-desktop {
+  display: none !important;
+  @include desktop {
+    display: block !important;
+  }
+}
+
+// ======================================
+//   LAYOUT RESPONSIVO
+// ======================================
+
+// Container responsivo
+.container-mobile {
+  @include mobile {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 100%;
+  }
+  
+  @include tablet {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    max-width: 100%;
+  }
+  
+  @include desktop {
+    padding-left: 2rem;
+    padding-right: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+// Grid responsivo
+.grid-mobile {
+  display: grid;
+  gap: 1rem;
+  
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+  
+  @include tablet {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @include desktop {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  @include large-desktop {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Flex responsivo
+.flex-mobile {
+  display: flex;
+  
+  @include mobile {
+    flex-direction: column;
+  }
+  
+  @include tablet {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  @include desktop {
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+}
+
+// ======================================
+//   TIPOGRAFÍA RESPONSIVA
+// ======================================
+
+.text-mobile {
+  @include mobile {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  @include tablet {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+  
+  @include desktop {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+}
+
+.heading-mobile {
+  @include mobile {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+  
+  @include tablet {
+    font-size: 2rem;
+    line-height: 2.5rem;
+  }
+  
+  @include desktop {
+    font-size: 2.5rem;
+    line-height: 3rem;
+  }
+}
+
+// ======================================
+//   ESPACIADO RESPONSIVO
+// ======================================
+
+.spacing-mobile {
+  @include mobile {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+  
+  @include tablet {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  @include desktop {
+    padding: 2rem;
+    margin: 1.5rem;
+  }
+}
+
+// ======================================
+//   COMPONENTES MÓVILES
+// ======================================
+
+// Botones táctiles
+.btn-touch {
+  @include mobile {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  @include tablet {
+    min-height: 40px;
+    min-width: 40px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+  }
+  
+  @include desktop {
+    min-height: 36px;
+    min-width: 36px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+  }
+}
+
+// Cards móviles
+.card-mobile {
+  @include mobile {
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  @include tablet {
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  @include desktop {
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Modales móviles
+.modal-mobile {
+  @include mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  
+  @include tablet {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+  }
+  
+  @include desktop {
+    max-width: 600px;
+    max-height: 80vh;
+  }
+}
+
+// ======================================
+//   NAVEGACIÓN MÓVIL
+// ======================================
+
+// Sidebar móvil
+.sidebar-mobile {
+  @include mobile {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 280px;
+    height: 100vh;
+    z-index: 40;
+    transition: left 0.3s ease;
+    background-color: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    
+    &.open {
+      left: 0;
+    }
+  }
+  
+  @include desktop {
+    position: relative;
+    left: 0;
+    width: auto;
+    height: auto;
+    z-index: auto;
+    transition: none;
+    box-shadow: none;
+  }
+}
+
+// Header móvil
+.header-mobile {
+  @include mobile {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  @include desktop {
+    position: relative;
+    z-index: auto;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+  }
+}
+
+// ======================================
+//   FORMULARIOS MÓVILES
+// ======================================
+
+.form-mobile {
+  @include mobile {
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+    }
+    
+    .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      background-color: white;
+      
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+    }
+  }
+}
+
+// ======================================
+//   TABLAS MÓVILES
+// ======================================
+
+.table-mobile {
+  @include mobile {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    
+    table {
+      min-width: 600px;
+    }
+    
+    th, td {
+      padding: 0.75rem 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    th {
+      background-color: #f9fafb;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+  }
+  
+  @include desktop {
+    display: table;
+    overflow-x: visible;
+    white-space: normal;
+    
+    table {
+      min-width: auto;
+    }
+    
+    th, td {
+      padding: 1rem;
+    }
+  }
+}
+
+// ======================================
+//   GRÁFICOS MÓVILES
+// ======================================
+
+.chart-mobile {
+  @include mobile {
+    height: 300px;
+    margin: 1rem 0;
+    
+    canvas {
+      max-height: 100%;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+  
+  @include tablet {
+    height: 400px;
+  }
+  
+  @include desktop {
+    height: 500px;
+  }
+}
+
+// ======================================
+//   ANIMACIONES MÓVILES
+// ======================================
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-left {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+// ======================================
+//   DARK MODE RESPONSIVO
+// ======================================
+
+@media (prefers-color-scheme: dark) {
+  .card-mobile {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .header-mobile {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
+  
+  .sidebar-mobile {
+    background-color: #1f2937;
+  }
+  
+  .form-input,
+  .form-select {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .table-mobile th {
+    background-color: #374151;
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "name": "gestor-proyectos",
+  "version": "1.0.0",
+  "description": "Aplicación web completa para gestión de proyectos personales",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "npm run build:client",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "build:netlify": "cd client && npm ci --include=dev && ./node_modules/.bin/vite build",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "lint": "npm run lint:server && npm run lint:client",
+    "lint:server": "cd server && npm run lint",
+    "lint:client": "cd client && npm run lint",
+    "lint:fix": "npm run lint:fix:server && npm run lint:fix:client",
+    "lint:fix:server": "cd server && npm run lint:fix",
+    "lint:fix:client": "cd client && npm run lint:fix",
+    "clean": "rm -rf node_modules server/node_modules client/node_modules server/dist client/dist",
+    "setup": "npm run install:all && npm run build",
+    "vercel-build": "npm run build",
+    "vercel-check": "node vercel-build-check.js",
+    "netlify-dev": "netlify dev"
+  },
+  "keywords": [
+    "react",
+    "nodejs",
+    "typescript",
+    "supabase",
+    "project-management",
+    "kanban",
+    "dashboard"
+  ],
+  "author": "David Rey <bazamus@github.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "netlify-cli": "^17.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bazamus/gestor-proyectos.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Bazamus/gestor-proyectos/issues"
+  },
+  "homepage": "https://github.com/Bazamus/gestor-proyectos#readme"
+}

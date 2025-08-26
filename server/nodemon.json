@@ -1,0 +1,31 @@
+{
+  "watch": ["src"],
+  "ext": "ts,js,json",
+  "ignore": [
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "node_modules/**/*",
+    "dist/**/*",
+    "*.log"
+  ],
+  "delay": "1000",
+  "legacyWatch": true,
+  "no-colours": true,
+  "env": {
+    "NODE_ENV": "development",
+    "DISABLE_RATE_LIMIT": "true",
+    "RATE_LIMIT_MAX_REQUESTS": "50000",
+    "RATE_LIMIT_WINDOW_MS": "900000"
+  },
+  "exec": "ts-node src/index.ts",
+  "restartable": "rs",
+  "verbose": false,
+  "quiet": false,
+  "colours": false,
+  "dump": false,
+  "ignoreRoot": [
+    "node_modules/**/*",
+    "dist/**/*",
+    "*.log"
+  ]
+}
