@@ -5,7 +5,7 @@ interface ProgressData {
   completion_rate: number;
   tasks_completed_today: number;
   tasks_completed_this_week: number;
-  tasks_completed_this_month: number;
+  tasks_completed_this_month?: number;
   total_tasks: number;
   active_projects: number;
   total_projects: number;
@@ -89,15 +89,17 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({
             </span>
           </div>
           
-          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <ClockIcon className="w-4 h-4 text-purple-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">Este mes</span>
+          {data.tasks_completed_this_month !== undefined && (
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <ClockIcon className="w-4 h-4 text-purple-500" />
+                <span className="text-sm text-gray-600 dark:text-gray-400">Este mes</span>
+              </div>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {data.tasks_completed_this_month} tareas
+              </span>
             </div>
-            <span className="font-medium text-gray-900 dark:text-white">
-              {data.tasks_completed_this_month} tareas
-            </span>
-          </div>
+          )}
         </div>
         
         {/* Additional Stats */}

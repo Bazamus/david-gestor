@@ -26,7 +26,7 @@ const Dashboard: React.FC = () => {
   const { isMobile } = useIsMobile();
   
   // Datos del dashboard
-  const { stats, productivity, isLoading, isError } = useDashboardData();
+  const { stats, isLoading, isError } = useDashboardData();
   const insights: any[] = [];
   const { data: recentProjects, isLoading: projectsLoading } = useProjects({ limit: 4 });
 
@@ -44,7 +44,6 @@ const Dashboard: React.FC = () => {
   }
 
   const dashboardStats = stats.data;
-  const productivityData = productivity.data;
 
   return (
     <div className="space-y-6">
@@ -184,13 +183,12 @@ const Dashboard: React.FC = () => {
           />
 
           {/* Progress Summary */}
-          {productivityData && (
+          {dashboardStats.productivity_stats && (
             <ProgressSummary
               data={{
-                completion_rate: productivityData.completion_rate || 0,
-                tasks_completed_today: productivityData.tasks_completed_today || 0,
-                tasks_completed_this_week: productivityData.tasks_completed_this_week || 0,
-                tasks_completed_this_month: productivityData.tasks_completed_this_month || 0,
+                completion_rate: dashboardStats.productivity_stats.productivity_percentage || 0,
+                tasks_completed_today: dashboardStats.productivity_stats.tasks_completed_today || 0,
+                tasks_completed_this_week: dashboardStats.productivity_stats.tasks_completed_this_week || 0,
                 total_tasks: dashboardStats.total_tasks || 0,
                 active_projects: dashboardStats.active_projects || 0,
                 total_projects: dashboardStats.total_projects || 0

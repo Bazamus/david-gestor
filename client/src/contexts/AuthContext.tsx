@@ -27,8 +27,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-<<<<<<< HEAD
-=======
   // Función interna para verificar token sin dependencias
   const verifyTokenInternal = async (tokenToVerify: string): Promise<boolean> => {
     try {
@@ -63,20 +61,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   // Verificar token al cargar la aplicación
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('authToken');
-<<<<<<< HEAD
-      if (storedToken) {
-        const isValid = await verifyToken();
-        if (!isValid) {
-          localStorage.removeItem('authToken');
-          setToken(null);
-          setUser(null);
-        }
-=======
       const storedUser = localStorage.getItem('user');
       
       if (storedToken) {
@@ -104,7 +92,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.removeItem('user');
         setUser(null);
         setToken(null);
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
       }
       setIsLoading(false);
     };
@@ -155,45 +142,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const verifyToken = async (): Promise<boolean> => {
-<<<<<<< HEAD
-    try {
-      const storedToken = localStorage.getItem('authToken');
-      if (!storedToken) return false;
-
-      const response = await fetch('/api/auth/verify', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${storedToken}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setUser(data.user);
-        setToken(storedToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return true;
-      } else {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        setUser(null);
-        setToken(null);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error verificando token:', error);
-      localStorage.removeItem('authToken');
-      setUser(null);
-      setToken(null);
-      return false;
-    }
-=======
     const storedToken = localStorage.getItem('authToken');
     if (!storedToken) return false;
     
     return await verifyTokenInternal(storedToken);
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   };
 
   const value: AuthContextType = {

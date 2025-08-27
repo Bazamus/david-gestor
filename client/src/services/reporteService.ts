@@ -30,8 +30,6 @@ interface HorasDiarias {
   valor: number;
 }
 
-<<<<<<< HEAD
-=======
 interface SemanaDisponible {
   year: number;
   week: number;
@@ -41,7 +39,6 @@ interface SemanaDisponible {
   end_date: string;
 }
 
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 // ======================================
 // FUNCIONES PRINCIPALES
 // ======================================
@@ -80,8 +77,6 @@ export const obtenerHorasDiarias = async (filtros?: { fechaInicio?: string; fech
   return response;
 };
 
-<<<<<<< HEAD
-=======
 /**
  * Obtiene semanas disponibles para Analytics Avanzado
  */
@@ -90,7 +85,6 @@ export const obtenerSemanasDisponibles = async (): Promise<SemanaDisponible[]> =
   return response;
 };
 
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 // ======================================
 // FUNCIONES UTILITARIAS
 // ======================================

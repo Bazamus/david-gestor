@@ -32,14 +32,11 @@ export enum TaskPriority {
 // INTERFACES DE ENTIDADES
 // ======================================
 
-<<<<<<< HEAD
 export interface ProjectListItem {
   id: string;
   name: string;
 }
 
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 export interface Project {
   id: string;
   name: string;
@@ -518,23 +515,13 @@ export interface RecentActivity {
 }
 
 export interface ProductivityStats {
+  productivity_percentage: number;
+  total_actual_hours: number;
   tasks_completed_today: number;
   tasks_completed_this_week: number;
-  tasks_completed_this_month: number;
-  completion_rate: number;
-  priority_distribution: {
-    urgent: number;
-    high: number;
-    medium: number;
-    low: number;
-  };
-  status_distribution: {
-    todo: number;
-    in_progress: number;
-    done: number;
-  };
-  total_tasks: number;
-  active_tasks: number;
+  hours_logged_today: number;
+  hours_logged_this_week: number;
+  average_task_completion_time: number;
 }
 
 export interface ProjectProgress {
@@ -799,6 +786,7 @@ export interface ApiError {
   stack?: string;
   url?: string;
   method?: string;
+  retryAfter?: number;
 }
 
 // ======================================

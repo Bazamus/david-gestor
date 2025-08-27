@@ -39,15 +39,10 @@ const Times: React.FC = () => {
 
   // Queries
   const { data: timeEntries, isLoading, isError } = useTimeEntries(filters);
-<<<<<<< HEAD
-  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useTimeSummary(filters);
-=======
   const { data: summary } = useTimeSummary(filters);
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   const { data: projects } = useProjects();
   const { data: tasks } = useTasks({});
 
-  // Debug: Log de los datos recibidos
 
 
   // Mutations
@@ -400,8 +395,6 @@ interface TimeSummaryCardProps {
 }
 
 const TimeSummaryCard: React.FC<TimeSummaryCardProps> = ({ summary }) => {
-  // Debug: Mostrar la estructura de datos recibida
-  console.log('TimeSummary data:', summary);
 
   // Valores por defecto y validación de datos con mejor manejo de errores
   const totalEntries = typeof summary?.total_entries === 'number' ? summary.total_entries : 0;

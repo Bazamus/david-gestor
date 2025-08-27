@@ -1,19 +1,10 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import { 
   ChevronLeft, 
   ChevronRight, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Eye,
   Filter,
   Search,
   Download
-=======
-import {
-  TagIcon,
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 } from 'lucide-react';
 import Button from '../common/Button';
 
@@ -140,11 +131,7 @@ const MobileTable: React.FC<MobileTableProps> = ({
           className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           aria-label="Scroll left"
         >
-<<<<<<< HEAD
           <ChevronLeft className="w-4 h-4" />
-=======
-          {/* ChevronLeft */}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
         </button>
         
         <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -156,11 +143,7 @@ const MobileTable: React.FC<MobileTableProps> = ({
           className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           aria-label="Scroll right"
         >
-<<<<<<< HEAD
           <ChevronRight className="w-4 h-4" />
-=======
-          {/* ChevronRight */}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
         </button>
       </div>
 
@@ -312,11 +295,7 @@ const MobileTable: React.FC<MobileTableProps> = ({
         <div className="flex items-center space-x-2">
           {searchable && (
             <div className="flex-1 relative">
-<<<<<<< HEAD
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-=======
-              {/* Search */}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
               <input
                 type="text"
                 placeholder="Buscar..."
@@ -331,11 +310,7 @@ const MobileTable: React.FC<MobileTableProps> = ({
             <Button
               variant="outline"
               size="sm"
-<<<<<<< HEAD
               icon={<Filter className="w-4 h-4" />}
-=======
-              icon={<TagIcon className="w-4 h-4" />}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
               onClick={() => setShowFilters(!showFilters)}
             >
               Filtros
@@ -346,11 +321,7 @@ const MobileTable: React.FC<MobileTableProps> = ({
             <Button
               variant="outline"
               size="sm"
-<<<<<<< HEAD
               icon={<Download className="w-4 h-4" />}
-=======
-              className="ml-2"
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
             >
               Exportar
             </Button>
@@ -382,11 +353,7 @@ const MobileTable: React.FC<MobileTableProps> = ({
       ) : filteredData.length === 0 ? (
         <div className="text-center py-8">
           <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
-<<<<<<< HEAD
             <Search className="w-6 h-6 text-gray-400" />
-=======
-            {/* Search */}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
           </div>
           <p className="text-gray-500 dark:text-gray-400">{emptyMessage}</p>
         </div>

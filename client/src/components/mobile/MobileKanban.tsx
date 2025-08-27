@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
@@ -6,27 +5,14 @@ import {
   DragEndEvent, 
   DragOverEvent,
   closestCorners,
-=======
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import {
-  DndContext,
-  closestCenter,
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-<<<<<<< HEAD
-=======
-  DragEndEvent,
-  DragOverEvent,
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   DragOverlay,
   useDroppable,
 } from '@dnd-kit/core';
 import {
-<<<<<<< HEAD
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -35,20 +21,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { 
   PlusIcon, 
-=======
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import {
-  SortableContext,
-} from '@dnd-kit/sortable';
-import {
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import {
-  PlusIcon,
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   ArrowLeftIcon,
   FolderIcon,
   FilterIcon,
@@ -60,34 +32,17 @@ import {
   ClockIcon,
   CheckCircleIcon,
   AlertTriangleIcon,
-<<<<<<< HEAD
-  MoreHorizontalIcon,
-  SearchIcon
-=======
   MoreHorizontalIcon
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 } from 'lucide-react';
 
 // Components
 import Button from '@/components/common/Button';
-<<<<<<< HEAD
-import { CardSkeleton } from '@/components/common/Loading';
 import { TaskCard } from '@/components/common/Card';
 import SearchInput from '@/components/common/SearchInput';
-import MobileTabs from './MobileTabs';
-import { MobileCard } from './MobileCard';
-=======
-import { TaskCard } from '@/components/common/Card';
-import SearchInput from '@/components/common/SearchInput';
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 
 // Hooks
 import { useTasks, useProjectTasks, useUpdateTaskPosition } from '@/hooks/useTasks';
 import { useProjects } from '@/hooks/useProjects';
-<<<<<<< HEAD
-import { useIsMobile } from '@/hooks/useIsMobile';
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 
 // Types
 import { Task, TaskWithProject, TaskStatus, TaskPriority } from '@/types';
@@ -100,10 +55,6 @@ interface MobileKanbanProps {
 const MobileKanban: React.FC<MobileKanbanProps> = ({ isGlobal = false }) => {
   const navigate = useNavigate();
   const { id: projectId } = useParams<{ id: string }>();
-<<<<<<< HEAD
-  const { isMobile } = useIsMobile();
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   const [activeId, setActiveId] = useState<string | null>(null);
   const [filters, setFilters] = useState<TaskFilters>({});
   const [compactView, setCompactView] = useState(false);
@@ -142,31 +93,28 @@ const MobileKanban: React.FC<MobileKanbanProps> = ({ isGlobal = false }) => {
 
   // Organizar tareas por estado
   const tasksByStatus = React.useMemo(() => {
-    if (!Array.isArray(tasks)) return { todo: [], in_progress: [], done: [] };
-    
+    const initial: Record<string, (Task | TaskWithProject)[]> = {
+      [TaskStatus.TODO]: [],
+      [TaskStatus.IN_PROGRESS]: [],
+      [TaskStatus.DONE]: [],
+    };
+
+    if (!Array.isArray(tasks)) return initial;
+
     return tasks.reduce((acc, task) => {
       const status = task.status as TaskStatus;
-      if (!acc[status]) acc[status] = [];
-      acc[status].push(task);
+      if (acc[status]) {
+        acc[status].push(task);
+      }
       return acc;
-<<<<<<< HEAD
-    }, {} as Record<TaskStatus, (Task | TaskWithProject)[]>);
-=======
-    }, {} as Record<string, (Task | TaskWithProject)[]>);
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
+    }, initial);
   }, [tasks]);
 
   // Configuración de columnas
-  const columns = [
-<<<<<<< HEAD
-    { id: 'todo', title: 'Por Hacer', color: 'blue', icon: ClockIcon },
-    { id: 'in_progress', title: 'En Progreso', color: 'yellow', icon: AlertTriangleIcon },
-    { id: 'done', title: 'Completado', color: 'green', icon: CheckCircleIcon },
-=======
-    { id: 'todo', title: 'Por Hacer', color: 'blue' as const, icon: ClockIcon },
-    { id: 'in_progress', title: 'En Progreso', color: 'yellow' as const, icon: AlertTriangleIcon },
-    { id: 'done', title: 'Completado', color: 'green' as const, icon: CheckCircleIcon },
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
+  const columns: { id: TaskStatus; title: string; color: 'blue' | 'yellow' | 'green'; icon: React.ComponentType<{className?: string}> }[] = [
+    { id: TaskStatus.TODO, title: 'Por Hacer', color: 'blue', icon: ClockIcon },
+    { id: TaskStatus.IN_PROGRESS, title: 'En Progreso', color: 'yellow', icon: AlertTriangleIcon },
+    { id: TaskStatus.DONE, title: 'Completado', color: 'green', icon: CheckCircleIcon },
   ];
 
   // Navegación entre columnas
@@ -193,16 +141,11 @@ const MobileKanban: React.FC<MobileKanbanProps> = ({ isGlobal = false }) => {
   };
 
   // Manejar drag over (para cambio entre columnas)
-<<<<<<< HEAD
   const handleDragOver = useCallback((event: DragOverEvent) => {
-=======
-  const handleDragOver = React.useCallback((event: DragOverEvent) => {
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
     const { active, over } = event;
     
     if (!over) return;
     
-<<<<<<< HEAD
     // Si se arrastra sobre una columna (DroppableColumn)
     if (over.id.toString().startsWith('column-')) {
       const newStatus = over.id.toString().replace('column-', '') as TaskStatus;
@@ -260,86 +203,6 @@ const MobileKanban: React.FC<MobileKanbanProps> = ({ isGlobal = false }) => {
       }
     }
   }, [tasks, tasksByStatus, updateTaskPosition]);
-=======
-    const activeId = active.id as string;
-    const overId = over.id as string;
-    
-    if (activeId === overId) return;
-    
-    // Aquí podrías implementar lógica para cambiar tareas entre columnas
-    // Por ahora solo manejamos reordenamiento dentro de la misma columna
-  }, []);
-
-  // Manejar drag end
-  const handleDragEnd = React.useCallback(async (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (!over) {
-      setActiveId(null);
-      return;
-    }
-    
-    const activeId = active.id as string;
-    const overId = over.id as string;
-    
-    if (activeId === overId) {
-      setActiveId(null);
-      return;
-    }
-    
-    // Encontrar las columnas de origen y destino
-    let sourceColumn: TaskStatus | null = null;
-    let targetColumn: TaskStatus | null = null;
-    
-    for (const [status, taskList] of Object.entries(tasksByStatus)) {
-      const taskIds = taskList.map((task: Task | TaskWithProject) => task.id);
-      if (taskIds.includes(activeId)) {
-        sourceColumn = status as TaskStatus;
-      }
-      if (taskIds.includes(overId)) {
-        targetColumn = status as TaskStatus;
-      }
-    }
-    
-    if (!sourceColumn || !targetColumn) {
-      setActiveId(null);
-      return;
-    }
-    
-    // Si es la misma columna, solo reordenar
-    if (sourceColumn === targetColumn) {
-      const columnTasks = tasksByStatus[sourceColumn] || [];
-      const oldIndex = columnTasks.findIndex((task: Task | TaskWithProject) => task.id === activeId);
-      const newIndex = columnTasks.findIndex((task: Task | TaskWithProject) => task.id === overId);
-      
-      if (oldIndex !== -1 && newIndex !== -1) {
-        // Actualizar posición en el backend
-        try {
-          await updateTaskPosition.mutateAsync({
-            taskId: activeId,
-            newStatus: sourceColumn,
-            newPosition: newIndex,
-          });
-        } catch (error) {
-          console.error('Error updating task position:', error);
-        }
-      }
-    } else {
-      // Cambiar de columna (cambiar status)
-      try {
-        await updateTaskPosition.mutateAsync({
-          taskId: activeId,
-          newStatus: targetColumn,
-          newPosition: 0, // Al final de la nueva columna
-        });
-      } catch (error) {
-        console.error('Error updating task status:', error);
-      }
-    }
-    
-    setActiveId(null);
-  }, [tasksByStatus, updateTaskPosition]);
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 
   // Detectar scroll para actualizar índice de columna
   useEffect(() => {
@@ -503,11 +366,7 @@ const MobileKanban: React.FC<MobileKanbanProps> = ({ isGlobal = false }) => {
       {/* Kanban Board con scroll horizontal */}
       <DndContext
         sensors={sensors}
-<<<<<<< HEAD
         collisionDetection={closestCorners}
-=======
-        collisionDetection={closestCenter}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
         onDragStart={({ active }) => setActiveId(active.id as string)}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -525,7 +384,7 @@ const MobileKanban: React.FC<MobileKanbanProps> = ({ isGlobal = false }) => {
               <MobileKanbanColumn
                 title={column.title}
                 status={column.id as TaskStatus}
-                tasks={tasksByStatus[column.id as TaskStatus] || []}
+                tasks={tasksByStatus[column.id] || []}
                 color={column.color}
                 icon={column.icon}
                 isGlobal={isGlobalView}
@@ -579,7 +438,6 @@ const MobileKanbanColumn: React.FC<MobileKanbanColumnProps> = ({
   compactView = false
 }) => {
   const navigate = useNavigate();
-  
   const colorClasses = {
     blue: 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800',
     yellow: 'border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800',
@@ -655,7 +513,7 @@ const SortableMobileTaskCard: React.FC<SortableMobileTaskCardProps> = ({
   task, 
   onClick, 
   isGlobal = false,
-  compactView = false 
+  compactView = false
 }) => {
   const {
     attributes,

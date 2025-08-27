@@ -43,10 +43,6 @@ const MobileFormWrapper: React.FC<MobileFormWrapperProps> = ({
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set([sections[0]?.id])
   );
-<<<<<<< HEAD
-  const [currentStep, setCurrentStep] = useState(0);
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 
   const toggleSection = (sectionId: string) => {
     const newExpanded = new Set(expandedSections);
@@ -182,11 +178,7 @@ const MobileFormWrapper: React.FC<MobileFormWrapperProps> = ({
 
         {/* Form Sections */}
         <div className="space-y-3">
-<<<<<<< HEAD
-          {sections.map((section, index) => (
-=======
           {sections.map((section) => (
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
             <div
               key={section.id}
               className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"

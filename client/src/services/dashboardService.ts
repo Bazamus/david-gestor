@@ -47,7 +47,6 @@ class DashboardService {
    * Obtener estadísticas completas del dashboard
    */
   async getDashboardStats(): Promise<DashboardStats> {
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<DashboardStats>>(`${this.basePath}/stats`);
     
     if (!response.data) {
@@ -55,22 +54,12 @@ class DashboardService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.get<DashboardStats>(`${this.basePath}/stats`);
-    
-    if (!response) {
-      throw new Error('Error al obtener estadísticas del dashboard');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Obtener resumen rápido para la página principal
    */
   async getQuickSummary(): Promise<QuickSummary> {
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<QuickSummary>>(`${this.basePath}/summary`);
     
     if (!response.data) {
@@ -78,45 +67,13 @@ class DashboardService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.get<QuickSummary>(`${this.basePath}/summary`);
-    
-    if (!response) {
-      throw new Error('Error al obtener resumen rápido');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
-  /**
-   * Obtener estadísticas de productividad
-   */
-  async getProductivityStats(): Promise<ProductivityStats> {
-<<<<<<< HEAD
-    const response = await apiClient.get<ApiResponse<ProductivityStats>>(`${this.basePath}/productivity`);
-    
-    if (!response.data) {
-      throw new Error('Error al obtener estadísticas de productividad');
-    }
-    
-    return response.data;
-=======
-    const response = await apiClient.get<ProductivityStats>(`${this.basePath}/productivity`);
-    
-    if (!response) {
-      throw new Error('Error al obtener estadísticas de productividad');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
-  }
 
   /**
    * Obtener progreso de todos los proyectos
    */
   async getProjectsProgress(): Promise<ProjectsProgressSummary> {
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<ProjectsProgressSummary>>(`${this.basePath}/projects-progress`);
     
     if (!response.data) {
@@ -124,15 +81,6 @@ class DashboardService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.get<ProjectsProgressSummary>(`${this.basePath}/projects-progress`);
-    
-    if (!response) {
-      throw new Error('Error al obtener progreso de proyectos');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
@@ -220,26 +168,15 @@ class DashboardService {
    */
   formatProductivityForCharts(productivity: ProductivityStats) {
     return {
-      // Distribución por prioridad
-      priorityDistribution: [
-        { name: 'Urgente', value: productivity.priority_distribution.urgent, color: '#EF4444' },
-        { name: 'Alta', value: productivity.priority_distribution.high, color: '#F97316' },
-        { name: 'Media', value: productivity.priority_distribution.medium, color: '#F59E0B' },
-        { name: 'Baja', value: productivity.priority_distribution.low, color: '#3B82F6' }
-      ],
-
-      // Distribución por estado
-      statusDistribution: [
-        { name: 'Por hacer', value: productivity.status_distribution.todo, color: '#6B7280' },
-        { name: 'En progreso', value: productivity.status_distribution.in_progress, color: '#3B82F6' },
-        { name: 'Completado', value: productivity.status_distribution.done, color: '#10B981' }
-      ],
-
-      // Métricas de tiempo
+      // Métricas de tiempo (los datos son actualmente placeholders desde el backend)
       timeStats: [
-        { label: 'Hoy', value: productivity.tasks_completed_today },
-        { label: 'Esta semana', value: productivity.tasks_completed_this_week },
-        { label: 'Este mes', value: productivity.tasks_completed_this_month }
+        { label: 'Tareas completadas hoy', value: productivity.tasks_completed_today },
+        { label: 'Tareas completadas esta semana', value: productivity.tasks_completed_this_week },
+      ],
+      // Nuevas métricas disponibles
+      mainMetrics: [
+        { label: 'Porcentaje de Productividad', value: productivity.productivity_percentage, unit: '%' },
+        { label: 'Total Horas Reales', value: productivity.total_actual_hours, unit: 'h' },
       ]
     };
   }
@@ -343,21 +280,19 @@ class DashboardService {
     }
 
     // Insight sobre productividad
-    const completionRate = stats.total_tasks > 0 
-      ? (stats.completed_tasks / stats.total_tasks) * 100 
-      : 0;
+    const { productivity_percentage } = stats.productivity_stats;
 
-    if (completionRate >= 80) {
+    if (productivity_percentage >= 80) {
       insights.push({
         type: 'success' as const,
         title: 'Excelente Productividad',
-        message: `Has completado el ${completionRate.toFixed(1)}% de tus tareas. ¡Sigue así!`
+        message: `Tu productividad es del ${productivity_percentage.toFixed(1)}%. ¡Sigue así!`
       });
-    } else if (completionRate < 50) {
+    } else if (productivity_percentage < 50) {
       insights.push({
         type: 'warning' as const,
         title: 'Oportunidad de Mejora',
-        message: `Solo has completado el ${completionRate.toFixed(1)}% de tus tareas. Considera revisar tus prioridades.`,
+        message: `Tu productividad es del ${productivity_percentage.toFixed(1)}%. Considera revisar tus prioridades.`,
         action: 'Ver consejos de productividad'
       });
     }

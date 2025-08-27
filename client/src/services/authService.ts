@@ -76,17 +76,12 @@ export class AuthService {
       });
 
       const data = await response.json();
-<<<<<<< HEAD
-      return data;
-=======
-      
       // Adaptar respuesta del backend a estructura esperada por frontend
       return {
         success: data.valid || false,
         user: data.user,
         message: data.message || (data.valid ? 'Token válido' : 'Token inválido')
       };
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
     } catch (error) {
       console.error('Error verificando token:', error);
       return {

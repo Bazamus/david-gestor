@@ -5,12 +5,8 @@ import {
   CreateProjectForm, 
   UpdateProjectForm,
   ProjectStatus,
-<<<<<<< HEAD
   ApiResponse,
   ProjectListItem
-=======
-  ApiResponse 
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 } from '@/types';
 
 // ======================================
@@ -52,20 +48,14 @@ class ProjectService {
       ? `${this.basePath}?${buildQueryParams(filters)}`
       : this.basePath;
 
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<ProjectWithStats[]>>(endpoint);
     return response.data || [];
-=======
-    const response = await apiClient.get<ProjectWithStats[]>(endpoint);
-    return response || [];
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Obtener un proyecto específico por ID
    */
   async getProjectById(id: string): Promise<ProjectWithStats> {
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<ProjectWithStats>>(`${this.basePath}/${id}`);
     
     if (!response.data) {
@@ -73,22 +63,12 @@ class ProjectService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.get<ProjectWithStats>(`${this.basePath}/${id}`);
-    
-    if (!response) {
-      throw new Error('Proyecto no encontrado');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Crear un nuevo proyecto
    */
   async createProject(projectData: CreateProjectForm): Promise<Project> {
-<<<<<<< HEAD
     const response = await apiClient.post<ApiResponse<Project>>(this.basePath, projectData);
     
     if (!response.data) {
@@ -96,15 +76,6 @@ class ProjectService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.post<Project>(this.basePath, projectData);
-    
-    if (!response) {
-      throw new Error('Error al crear proyecto');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
@@ -113,7 +84,6 @@ class ProjectService {
   async updateProject(id: string, projectData: UpdateProjectForm): Promise<Project> {
     console.log('projectService.updateProject: Called with:', { id, projectData });
     
-<<<<<<< HEAD
     const response = await apiClient.put<ApiResponse<Project>>(`${this.basePath}/${id}`, projectData);
     
     console.log('projectService.updateProject: Response:', response);
@@ -123,17 +93,6 @@ class ProjectService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.put<Project>(`${this.basePath}/${id}`, projectData);
-    
-    console.log('projectService.updateProject: Response:', response);
-    
-    if (!response) {
-      throw new Error('Error al actualizar proyecto');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
@@ -147,7 +106,6 @@ class ProjectService {
    * Obtener estadísticas de un proyecto
    */
   async getProjectStats(id: string): Promise<ProjectStats> {
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<ProjectStats>>(`${this.basePath}/${id}/stats`);
     
     if (!response.data) {
@@ -158,23 +116,11 @@ class ProjectService {
   }
 
   /**
-   * Archivar un proyecto
-   */
-  /**
    * Obtener una lista simplificada de proyectos para filtros
    */
   async getProjectList(): Promise<ProjectListItem[]> {
     const response = await apiClient.get<ApiResponse<ProjectListItem[]>>(`${this.basePath}/list`);
     return response.data || [];
-=======
-    const response = await apiClient.get<ProjectStats>(`${this.basePath}/${id}/stats`);
-    
-    if (!response) {
-      throw new Error('Error al obtener estadísticas del proyecto');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
@@ -381,13 +327,9 @@ class ProjectService {
 // INSTANCIA SINGLETON
 // ======================================
 
-<<<<<<< HEAD
 const projectService = new ProjectService();
 
 export const getProjectList = projectService.getProjectList.bind(projectService);
 
 export { projectService };
-=======
-export const projectService = new ProjectService();
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 export default projectService;

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // Componentes móviles - Se irán creando en las siguientes fases
 // Por ahora, exportamos placeholders para mantener la estructura
 
@@ -24,30 +23,8 @@ export { default as MobileTimeline } from './MobileTimeline';
 
 // Fase 7: Gráficos móviles ✅ COMPLETADA
 export { default as MobileCharts, MobileChartsExample } from './MobileCharts';
-// export { default as MobileKanban } from './MobileKanban';
-// export { default as MobileTimeline } from './MobileTimeline';
-
-// Fase 7: Gráficos móviles
-// export { default as MobileCharts } from './MobileCharts';
 
 // Componentes comunes móviles
 export { default as MobileModal } from './MobileModal';
 export { default as MobileDrawer } from './MobileDrawer';
 export { default as MobileTabs } from './MobileTabs';
-=======
-// Componentes móviles principales
-export { default as MobileDashboard } from './MobileDashboard';
-export { default as MobileKanban } from './MobileKanban';
-export { default as MobileTimeline } from './MobileTimeline';
-export { default as MobileTable } from './MobileTable';
-export { default as MobileFormWrapper } from './MobileFormWrapper';
-export { default as MobileModal } from './MobileModal';
-export { default as MobileHeader } from './MobileHeader';
-export { default as MobileNavigation } from './MobileNavigation';
-export { default as MobileDrawer } from './MobileDrawer';
-export { default as MobileAccordion } from './MobileAccordion';
-export { default as MobileCard } from './MobileCard';
-export { default as MobileStatsCard } from './MobileStatsCard';
-export { default as MobileTabs } from './MobileTabs';
-export { default as MobileCharts } from './MobileCharts';
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba

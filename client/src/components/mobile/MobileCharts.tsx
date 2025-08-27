@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useRef, useMemo } from 'react';
 import {
   BarChart,
@@ -43,7 +42,6 @@ import Button from '@/components/common/Button';
 import MobileTabs from './MobileTabs';
 
 // Hooks
-import { useIsMobile } from '@/hooks/useIsMobile';
 
 // Types
 interface ChartData {
@@ -51,21 +49,10 @@ interface ChartData {
   value: number;
   [key: string]: any;
 }
-=======
-import React, { useState } from 'react';
-import {
-  BarChart3Icon,
-  TrendingUpIcon,
-  CheckCircleIcon
-} from 'lucide-react';
-import { useDashboardData } from '@/hooks/useDashboard';
-import Button from '../common/Button';
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 
 interface ChartConfig {
   id: string;
   title: string;
-<<<<<<< HEAD
   type: 'bar' | 'line' | 'pie' | 'area' | 'composed' | 'scatter';
   data: ChartData[];
   colors?: string[];
@@ -97,7 +84,6 @@ const MobileCharts: React.FC<MobileChartsProps> = ({
   showExport = true,
   className = ''
 }) => {
-  const { isMobile } = useIsMobile();
   const [activeChartIndex, setActiveChartIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showLegend, setShowLegend] = useState(true);
@@ -126,7 +112,7 @@ const MobileCharts: React.FC<MobileChartsProps> = ({
   }
 
   // Renderizar gráfico según tipo
-  const renderChart = (chart: ChartConfig, index: number) => {
+  const renderChart = (chart: ChartConfig) => {
     const chartHeight = chart.height || (isFullscreen ? 400 : 300);
     const colors = chart.colors || ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
@@ -197,7 +183,7 @@ const MobileCharts: React.FC<MobileChartsProps> = ({
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 animationDuration={chart.animate ? 1000 : 0}
               >
-                {chart.data.map((entry, index) => (
+                {chart.data.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                 ))}
               </Pie>
@@ -272,7 +258,7 @@ const MobileCharts: React.FC<MobileChartsProps> = ({
   const summaryMetrics = useMemo(() => {
     if (!charts.length) return [];
     
-    return charts.map((chart, index) => {
+    return charts.map((chart) => {
       const total = chart.data.reduce((sum, item) => sum + (item.value || 0), 0);
       const average = total / chart.data.length;
       const max = Math.max(...chart.data.map(item => item.value || 0));
@@ -362,140 +348,12 @@ const MobileCharts: React.FC<MobileChartsProps> = ({
                 </div>
               </div>
             </div>
-=======
-  type: 'bar' | 'line' | 'pie';
-  data: Array<{
-    label: string;
-    value: number;
-    color?: string;
-  }>;
-  icon: React.ReactNode;
-}
-
-interface MobileChartsProps {
-  className?: string;
-}
-
-const MobileCharts: React.FC<MobileChartsProps> = ({ className = '' }) => {
-  const [activeChart, setActiveChart] = useState<string>('projects');
-  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('month');
-
-  // Hooks para obtener datos
-  const { stats } = useDashboardData();
-
-  const dashboardStats = stats?.data;
-
-  // Configuración de gráficos
-  const charts: ChartConfig[] = [
-    {
-      id: 'projects',
-      title: 'Proyectos por Estado',
-      type: 'pie',
-      data: [
-        { label: 'Activos', value: dashboardStats?.active_projects || 0, color: '#10B981' },
-        { label: 'Completados', value: (dashboardStats?.total_projects || 0) - (dashboardStats?.active_projects || 0), color: '#3B82F6' },
-        { label: 'Planificación', value: 0, color: '#F59E0B' }
-      ],
-      icon: <BarChart3Icon className="w-5 h-5" />
-    },
-    {
-      id: 'tasks',
-      title: 'Tareas por Estado',
-      type: 'bar',
-      data: [
-        { label: 'Pendientes', value: dashboardStats?.pending_tasks || 0, color: '#F59E0B' },
-        { label: 'En Progreso', value: (dashboardStats?.total_tasks || 0) - (dashboardStats?.pending_tasks || 0) - (dashboardStats?.completed_tasks || 0), color: '#3B82F6' },
-        { label: 'Completadas', value: dashboardStats?.completed_tasks || 0, color: '#10B981' },
-        { label: 'Vencidas', value: dashboardStats?.overdue_tasks || 0, color: '#EF4444' }
-      ],
-      icon: <CheckCircleIcon className="w-5 h-5" />
-    },
-    {
-      id: 'productivity',
-      title: 'Productividad Semanal',
-      type: 'line',
-      data: [
-        { label: 'Lun', value: 75 },
-        { label: 'Mar', value: 82 },
-        { label: 'Mié', value: 68 },
-        { label: 'Jue', value: 90 },
-        { label: 'Vie', value: 85 },
-        { label: 'Sáb', value: 60 },
-        { label: 'Dom', value: 45 }
-      ],
-      icon: <TrendingUpIcon className="w-5 h-5" />
-    }
-  ];
-
-  // Renderizar gráfico de barras
-  const renderBarChart = (data: ChartConfig['data']) => {
-    const maxValue = Math.max(...data.map(item => item.value));
-    
-    return (
-      <div className="space-y-3">
-        {data.map((item) => (
-          <div key={item.label} className="flex items-center space-x-3">
-            <div className="w-16 text-sm text-gray-600">{item.label}</div>
-            <div className="flex-1 bg-gray-200 rounded-full h-4">
-              <div
-                className="h-4 rounded-full transition-all duration-300"
-                style={{
-                  width: `${maxValue > 0 ? (item.value / maxValue) * 100 : 0}%`,
-                  backgroundColor: item.color || '#3B82F6'
-                }}
-              />
-            </div>
-            <div className="w-12 text-sm font-medium text-gray-900">{item.value}</div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Renderizar gráfico de líneas
-  const renderLineChart = (data: ChartConfig['data']) => {
-    const maxValue = Math.max(...data.map(item => item.value));
-    const minValue = Math.min(...data.map(item => item.value));
-    const range = maxValue - minValue;
-    
-    return (
-      <div className="relative h-48">
-        <svg className="w-full h-full" viewBox="0 0 300 200">
-          <polyline
-            fill="none"
-            stroke="#3B82F6"
-            strokeWidth="2"
-            points={data.map((item, index) => {
-              const x = (index / (data.length - 1)) * 280 + 10;
-              const y = range > 0 ? 190 - ((item.value - minValue) / range) * 180 : 100;
-              return `${x},${y}`;
-            }).join(' ')}
-          />
-          {data.map((item, index) => {
-            const x = (index / (data.length - 1)) * 280 + 10;
-            const y = range > 0 ? 190 - ((item.value - minValue) / range) * 180 : 100;
-            return (
-              <circle
-                key={index}
-                cx={x}
-                cy={y}
-                r="4"
-                fill="#3B82F6"
-              />
-            );
-          })}
-        </svg>
-        <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500">
-          {data.map((item) => (
-            <span key={item.label}>{item.label}</span>
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
           ))}
         </div>
       </div>
     );
   };
 
-<<<<<<< HEAD
   // Controles de gráfico
   const renderControls = () => {
     if (!showControls) return null;
@@ -557,39 +415,16 @@ const MobileCharts: React.FC<MobileChartsProps> = ({ className = '' }) => {
             </p>
           </div>
         )}
-=======
-  // Renderizar gráfico de pastel
-  const renderPieChart = (data: ChartConfig['data']) => {
-    const total = data.reduce((sum, item) => sum + item.value, 0);
-    
-    return (
-      <div className="space-y-3">
-        {data.map((item) => (
-          <div key={item.label} className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div
-                className="w-4 h-4 rounded"
-                style={{ backgroundColor: item.color || '#3B82F6' }}
-              />
-              <span className="text-sm text-gray-600">{item.label}</span>
-            </div>
-            <div className="text-sm font-medium text-gray-900">
-              {total > 0 ? Math.round((item.value / total) * 100) : 0}%
-            </div>
-          </div>
-        ))}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
       </div>
     );
   };
 
-<<<<<<< HEAD
   // Configuración de pestañas - MOVIDA AQUÍ DESPUÉS DE TODAS LAS FUNCIONES
-  const chartTabs = charts.map((chart, index) => ({
+  const chartTabs = charts.map((chart) => ({
     id: chart.id,
     label: chart.title,
     icon: getChartIcon(chart.type),
-    content: renderChart(chart, index)
+    content: renderChart(chart)
   }));
 
   if (!charts.length) {
@@ -605,26 +440,10 @@ const MobileCharts: React.FC<MobileChartsProps> = ({ className = '' }) => {
       </div>
     );
   }
-=======
-  // Renderizar gráfico basado en el tipo
-  const renderChart = (chart: ChartConfig) => {
-    switch (chart.type) {
-      case 'bar':
-        return renderBarChart(chart.data);
-      case 'line':
-        return renderLineChart(chart.data);
-      case 'pie':
-        return renderPieChart(chart.data);
-      default:
-        return null;
-    }
-  };
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header */}
-<<<<<<< HEAD
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between mb-2">
           <div>
@@ -689,7 +508,7 @@ const MobileCharts: React.FC<MobileChartsProps> = ({ className = '' }) => {
             </h3>
           </div>
           
-          {renderChart(activeChart, activeChartIndex)}
+          {renderChart(activeChart)}
         </div>
       </div>
 
@@ -728,67 +547,10 @@ const MobileCharts: React.FC<MobileChartsProps> = ({ className = '' }) => {
           </div>
         </div>
       )}
-=======
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Analíticas</h2>
-        <div className="flex space-x-1">
-          <Button
-            variant={timeRange === 'week' ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('week')}
-          >
-            Semana
-          </Button>
-          <Button
-            variant={timeRange === 'month' ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('month')}
-          >
-            Mes
-          </Button>
-          <Button
-            variant={timeRange === 'year' ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('year')}
-          >
-            Año
-          </Button>
-        </div>
-      </div>
-
-      {/* Selector de gráficos */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-        {charts.map((chart) => (
-          <button
-            key={chart.id}
-            onClick={() => setActiveChart(chart.id)}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeChart === chart.id
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            {chart.icon}
-            <span>{chart.title}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Gráfico activo */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        {charts.map((chart) => (
-          <div key={chart.id} className={activeChart === chart.id ? 'block' : 'hidden'}>
-            <h3 className="font-medium text-gray-900 mb-4">{chart.title}</h3>
-            {renderChart(chart)}
-          </div>
-        ))}
-      </div>
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
     </div>
   );
 };
 
-<<<<<<< HEAD
 // Componente de gráfico de ejemplo para testing
 export const MobileChartsExample: React.FC = () => {
   const sampleData = [
@@ -862,6 +624,4 @@ export const MobileChartsExample: React.FC = () => {
   );
 };
 
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 export default MobileCharts;

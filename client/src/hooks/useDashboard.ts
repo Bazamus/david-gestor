@@ -8,7 +8,6 @@ export const dashboardKeys = {
   all: ['dashboard'] as const,
   stats: () => [...dashboardKeys.all, 'stats'] as const,
   summary: () => [...dashboardKeys.all, 'summary'] as const,
-  productivity: () => [...dashboardKeys.all, 'productivity'] as const,
   projectsProgress: () => [...dashboardKeys.all, 'projects-progress'] as const,
   recentActivity: (limit?: number) => [...dashboardKeys.all, 'recent-activity', limit] as const,
   timeMetrics: () => [...dashboardKeys.all, 'time-metrics'] as const,
@@ -40,18 +39,6 @@ export const useQuickSummary = (options?: UseApiOptions) => {
     queryFn: () => dashboardService.getQuickSummary(),
     staleTime: 3 * 60 * 1000, // 3 minutos
     refetchInterval: 10 * 60 * 1000, // Refetch cada 10 minutos
-    ...options,
-  });
-};
-
-/**
- * Hook para obtener estadísticas de productividad
- */
-export const useProductivityStats = (options?: UseApiOptions) => {
-  return useQuery({
-    queryKey: dashboardKeys.productivity(),
-    queryFn: () => dashboardService.getProductivityStats(),
-    staleTime: 5 * 60 * 1000, // 5 minutos
     ...options,
   });
 };
@@ -102,19 +89,16 @@ export const useTimeMetrics = (options?: UseApiOptions) => {
 export const useDashboardData = (options?: UseApiOptions) => {
   const statsQuery = useDashboardStats(options);
   const summaryQuery = useQuickSummary(options);
-  const productivityQuery = useProductivityStats(options);
 
   return {
     stats: statsQuery,
     summary: summaryQuery,
-    productivity: productivityQuery,
-    isLoading: statsQuery.isLoading || summaryQuery.isLoading || productivityQuery.isLoading,
-    isError: statsQuery.isError || summaryQuery.isError || productivityQuery.isError,
-    error: statsQuery.error || summaryQuery.error || productivityQuery.error,
+    isLoading: statsQuery.isLoading || summaryQuery.isLoading,
+    isError: statsQuery.isError || summaryQuery.isError,
+    error: statsQuery.error || summaryQuery.error,
     refetchAll: () => {
       statsQuery.refetch();
       summaryQuery.refetch();
-      productivityQuery.refetch();
     },
   };
 };
@@ -123,67 +107,24 @@ export const useDashboardData = (options?: UseApiOptions) => {
  * Hook para datos de gráficos del dashboard
  */
 export const useDashboardCharts = (options?: UseApiOptions) => {
-  const { data: stats, isLoading: statsLoading } = useDashboardStats(options);
-  const { data: productivity, isLoading: productivityLoading } = useProductivityStats(options);
+  const { data: stats, isLoading, isError } = useDashboardStats(options);
 
-  // Procesar datos para gráficos
   const chartData = React.useMemo(() => {
-    if (!stats || !productivity) return null;
+    if (!stats) return null;
+
+    const formattedStats = dashboardService.formatStatsForCharts(stats);
+    const formattedProductivity = dashboardService.formatProductivityForCharts(stats.productivity_stats);
 
     return {
-      // Datos para gráfico de tareas por estado
-      tasksByStatus: [
-        { name: 'Completadas', value: stats.completed_tasks, color: '#10B981' },
-        { name: 'Pendientes', value: stats.pending_tasks, color: '#3B82F6' },
-        { name: 'Vencidas', value: stats.overdue_tasks, color: '#EF4444' }
-      ],
-
-      // Datos para gráfico de prioridades
-      tasksByPriority: [
-        { name: 'Urgente', value: productivity.priority_distribution.urgent, color: '#EF4444' },
-        { name: 'Alta', value: productivity.priority_distribution.high, color: '#F97316' },
-        { name: 'Media', value: productivity.priority_distribution.medium, color: '#F59E0B' },
-        { name: 'Baja', value: productivity.priority_distribution.low, color: '#3B82F6' }
-      ],
-
-      // Métricas principales
-      keyMetrics: [
-        {
-          label: 'Proyectos Totales',
-          value: stats.total_projects,
-          change: '+0%', // TODO: Calcular cambio real
-          trend: 'up' as const,
-          color: 'blue'
-        },
-        {
-          label: 'Tareas Completadas',
-          value: stats.completed_tasks,
-          change: '+0%',
-          trend: 'up' as const,
-          color: 'green'
-        },
-        {
-          label: 'Tareas Vencidas',
-          value: stats.overdue_tasks,
-          change: '+0%',
-          trend: 'down' as const,
-          color: 'red'
-        },
-        {
-          label: 'Proyectos Activos',
-          value: stats.active_projects,
-          change: '+0%',
-          trend: 'up' as const,
-          color: 'purple'
-        }
-      ]
+      ...formattedStats,
+      productivityCharts: formattedProductivity,
     };
-  }, [stats, productivity]);
+  }, [stats]);
 
   return {
     data: chartData,
-    isLoading: statsLoading || productivityLoading,
-    isError: !chartData && !statsLoading && !productivityLoading,
+    isLoading,
+    isError,
   };
 };
 
@@ -209,22 +150,21 @@ export const useDashboardInsights = (options?: UseApiOptions) => {
     }
 
     // Insight sobre productividad
-    const completionRate = stats.total_tasks > 0 
-      ? (stats.completed_tasks / stats.total_tasks) * 100 
-      : 0;
-
-    if (completionRate >= 80) {
-      insights.push({
-        type: 'success' as const,
-        title: 'Excelente Productividad',
-        message: `Has completado el ${completionRate.toFixed(1)}% de tus tareas. ¡Sigue así!`
-      });
-    } else if (completionRate < 50) {
-      insights.push({
-        type: 'warning' as const,
-        title: 'Oportunidad de Mejora',
-        message: `Solo has completado el ${completionRate.toFixed(1)}% de tus tareas. Considera revisar tus prioridades.`
-      });
+    if (stats.productivity_stats) {
+      const { productivity_percentage } = stats.productivity_stats;
+      if (productivity_percentage >= 80) {
+        insights.push({
+          type: 'success' as const,
+          title: 'Excelente Productividad',
+          message: `Tu productividad es del ${productivity_percentage.toFixed(1)}%. ¡Sigue así!`
+        });
+      } else if (productivity_percentage < 50) {
+        insights.push({
+          type: 'warning' as const,
+          title: 'Oportunidad de Mejora',
+          message: `Tu productividad es del ${productivity_percentage.toFixed(1)}%. Considera revisar tus prioridades.`
+        });
+      }
     }
 
     // Insight sobre próximas tareas

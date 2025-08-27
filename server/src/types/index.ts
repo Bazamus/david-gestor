@@ -338,6 +338,8 @@ export interface RecentActivity {
 }
 
 export interface ProductivityStats {
+  productivity_percentage: number;
+  total_actual_hours: number;
   tasks_completed_today: number;
   tasks_completed_this_week: number;
   hours_logged_today: number;

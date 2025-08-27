@@ -604,16 +604,12 @@ class SupabaseService {
 
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      // Estadísticas básicas de proyectos
-      const { data: projectStats } = await this.supabase
-        .from('projects')
-        .select('status')
-        .neq('status', 'archived');
+      // Llamada a la función RPC para obtener estadísticas globales
+      const { data: stats, error } = await this.supabase.rpc('get_global_stats');
 
-      // Estadísticas básicas de tareas
-      const { data: taskStats } = await this.supabase
-        .from('tasks')
-        .select('status, due_date, created_at');
+      if (error || !stats) {
+        throw new Error(`Error al llamar a get_global_stats: ${error?.message || 'No data returned'}`);
+      }
 
       // Tareas próximas a vencer (próximos 7 días)
       const nextWeek = new Date();
@@ -628,39 +624,28 @@ class SupabaseService {
         .order('due_date', { ascending: true })
         .limit(10);
 
-      // Calcular estadísticas
-      const totalProjects = projectStats?.length || 0;
-      const activeProjects = projectStats?.filter(p => p.status === 'active').length || 0;
-      const totalTasks = taskStats?.length || 0;
-      const completedTasks = taskStats?.filter(t => t.status === 'done').length || 0;
-      const pendingTasks = totalTasks - completedTasks;
-
-      // Tareas vencidas
-      const now = new Date();
-      const overdueTasks = taskStats?.filter(t => 
-        t.status !== 'done' && 
-        t.due_date && 
-        new Date(t.due_date) < now
-      ).length || 0;
-
       return {
-        total_projects: totalProjects,
-        active_projects: activeProjects,
-        total_tasks: totalTasks,
-        completed_tasks: completedTasks,
-        pending_tasks: pendingTasks,
-        overdue_tasks: overdueTasks,
+        total_projects: stats.total_projects || 0,
+        active_projects: stats.active_projects || 0,
+        total_tasks: stats.total_tasks || 0,
+        completed_tasks: stats.completed_tasks || 0,
+        pending_tasks: stats.pending_tasks || 0,
+        overdue_tasks: stats.overdue_tasks || 0,
         upcoming_tasks: upcomingTasks || [],
         recent_activity: [], // TODO: Implementar actividad reciente
         productivity_stats: {
-          tasks_completed_today: 0, // TODO: Implementar
-          tasks_completed_this_week: 0, // TODO: Implementar
-          hours_logged_today: 0, // TODO: Implementar
-          hours_logged_this_week: 0, // TODO: Implementar
-          average_task_completion_time: 0, // TODO: Implementar
+          productivity_percentage: stats.productivity_percentage || 0,
+          total_actual_hours: stats.total_actual_hours || 0,
+          // Los siguientes son TODOs como en la implementación original
+          tasks_completed_today: 0,
+          tasks_completed_this_week: 0,
+          hours_logged_today: 0,
+          hours_logged_this_week: 0,
+          average_task_completion_time: 0,
         },
       };
     } catch (error) {
+      console.error('Error en getDashboardStats:', error);
       throw new Error(`Error al obtener estadísticas del dashboard: ${error}`);
     }
   }

@@ -1,49 +1,30 @@
-<<<<<<< HEAD
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-=======
-import React, { useState } from 'react';
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
+import React, { useState, useEffect } from 'react';
 import moment from 'moment';
 import 'moment/locale/es';
 import { 
+  AlertTriangle,
   Calendar, 
-<<<<<<< HEAD
   Clock, 
   Target, 
   CheckCircle, 
-  AlertTriangle,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  FilterIcon,
-  CalendarIcon,
-  BarChart3Icon,
-  TrendingUpIcon,
-  EyeIcon,
-  EyeOffIcon,
-  SearchIcon,
-  MoreHorizontalIcon,
-  PlayIcon,
-  PauseIcon,
-  CheckCircle2Icon
-=======
-  Target, 
-  EyeIcon,
-  EyeOffIcon
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  Filter as FilterIcon,
+  Calendar as CalendarIcon,
+  BarChart3 as BarChart3Icon,
+  TrendingUp as TrendingUpIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  MoreHorizontal as MoreHorizontalIcon
 } from 'lucide-react';
 
 // Components
 import Button from '@/components/common/Button';
 import MobileTabs from './MobileTabs';
-<<<<<<< HEAD
-import { MobileCard } from './MobileCard';
-import { MobileAccordion } from './MobileAccordion';
 import SearchInput from '@/components/common/SearchInput';
 
 // Hooks
 import { useTimeline } from '@/hooks/useTimeline';
-import { useIsMobile } from '@/hooks/useIsMobile';
 
 // Types
 import { TimelineItem, TimelineGroup } from '@/types/timeline';
@@ -52,37 +33,30 @@ import { ProjectWithStats, TaskWithProject, TaskStatus, ProjectStatus, TaskPrior
 // Services
 import { projectService } from '@/services/projectService';
 import { taskService } from '@/services/taskService';
-=======
-import SearchInput from '@/components/common/SearchInput';
-
-// Types
-import { TimelineItem } from '@/types/timeline';
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 
 // Configurar moment para español
 moment.locale('es');
 
-<<<<<<< HEAD
-// Función para obtener el nombre del mes en español
-const getMonthName = (date: moment.Moment): string => {
-  const months = [
-    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
-  ];
-  return months[date.month()];
-};
-
 // Función para obtener el nombre completo del mes en español
 const getFullMonthName = (date: moment.Moment): string => {
-  const months = [
-    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-  ];
-  return months[date.month()];
+  return date.format('MMMM');
 };
 
 // Función para convertir proyecto a TimelineItem
 const convertProjectToTimelineItem = (project: ProjectWithStats): TimelineItem => {
+  const getStatusString = (status: ProjectStatus): 'completed' | 'in_progress' | 'pending' => {
+    switch (status) {
+      case ProjectStatus.COMPLETED:
+        return 'completed';
+      case ProjectStatus.ACTIVE:
+        return 'in_progress';
+      case ProjectStatus.PLANNING:
+      case ProjectStatus.ON_HOLD:
+      default:
+        return 'pending';
+    }
+  };
+
   const calculateProjectProgress = (completionPercentage: number | null, status: ProjectStatus): number => {
     if (completionPercentage !== null && completionPercentage !== undefined) {
       return Math.min(Math.max(completionPercentage, 0), 100);
@@ -110,8 +84,7 @@ const convertProjectToTimelineItem = (project: ProjectWithStats): TimelineItem =
     group: project.id,
     color: project.color || '#3B82F6',
     priority: 'medium',
-    status: project.status === ProjectStatus.COMPLETED ? 'completed' : 
-            project.status === ProjectStatus.ACTIVE ? 'in_progress' : 'pending',
+    status: getStatusString(project.status),
     progress: progress,
     description: project.description || '',
     type: 'project'
@@ -134,11 +107,27 @@ const convertTaskToTimelineItem = (task: TaskWithProject): TimelineItem => {
     }
   };
 
+  const getStatusString = (status: TaskStatus): 'completed' | 'in_progress' | 'pending' => {
+    switch (status) {
+      case TaskStatus.DONE:
+      case TaskStatus.COMPLETADA:
+        return 'completed';
+      case TaskStatus.IN_PROGRESS:
+      case TaskStatus.EN_PROGRESO:
+        return 'in_progress';
+      case TaskStatus.TODO:
+      default:
+        return 'pending';
+    }
+  };
+
   const calculateProgress = (status: TaskStatus): number => {
     switch (status) {
       case TaskStatus.DONE:
+      case TaskStatus.COMPLETADA:
         return 100;
       case TaskStatus.IN_PROGRESS:
+      case TaskStatus.EN_PROGRESO:
         return 50;
       case TaskStatus.TODO:
       default:
@@ -156,8 +145,7 @@ const convertTaskToTimelineItem = (task: TaskWithProject): TimelineItem => {
     group: task.project_id || 'sin-proyecto',
     color: task.project?.color || '#6B7280',
     priority: getPriorityString(task.priority),
-    status: task.status === TaskStatus.DONE ? 'completed' : 
-            task.status === TaskStatus.IN_PROGRESS ? 'in_progress' : 'pending',
+    status: getStatusString(task.status),
     progress: progress,
     description: task.description || '',
     type: 'task',
@@ -188,16 +176,11 @@ const createTaskGroups = (tasks: TaskWithProject[]): TimelineGroup[] => {
   });
 };
 
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 interface MobileTimelineProps {
   isGlobal?: boolean;
 }
 
-<<<<<<< HEAD
-const MobileTimeline: React.FC<MobileTimelineProps> = ({ isGlobal = false }) => {
-  const navigate = useNavigate();
-  const { isMobile } = useIsMobile();
+const MobileTimeline: React.FC<MobileTimelineProps> = () => {
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [groups, setGroups] = useState<TimelineGroup[]>([]);
   const [loading, setLoading] = useState(false);
@@ -287,7 +270,7 @@ const MobileTimeline: React.FC<MobileTimelineProps> = ({ isGlobal = false }) => 
   // Filtrar items por búsqueda
   const filteredItems = items.filter(item => 
     item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Función para manejar click en items del timeline
@@ -296,39 +279,11 @@ const MobileTimeline: React.FC<MobileTimelineProps> = ({ isGlobal = false }) => 
     openItemDetail(item);
   };
 
-  // Obtener icono de estado
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle2Icon className="w-4 h-4 text-green-500" />;
-      case 'in_progress':
-        return <PlayIcon className="w-4 h-4 text-blue-500" />;
-      case 'overdue':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      default:
-        return <PauseIcon className="w-4 h-4 text-gray-500" />;
-    }
-  };
-
-  // Obtener color de prioridad
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-400';
-      case 'medium':
-        return 'bg-yellow-400';
-      case 'low':
-        return 'bg-green-400';
-      default:
-        return 'bg-gray-400';
-    }
-  };
-
   // Configuración de pestañas
   const viewTabs = [
-    { id: 'projects', label: 'Proyectos', icon: <Target className="w-4 h-4" /> },
-    { id: 'tasks', label: 'Tareas', icon: <CheckCircle className="w-4 h-4" /> },
-    { id: 'kpis', label: 'Métricas', icon: <BarChart3Icon className="w-4 h-4" /> },
+    { id: 'projects', label: 'Proyectos', icon: <Target className="w-4 h-4" />, content: <></> },
+    { id: 'tasks', label: 'Tareas', icon: <CheckCircle className="w-4 h-4" />, content: <></> },
+    { id: 'kpis', label: 'Métricas', icon: <BarChart3Icon className="w-4 h-4" />, content: <></> },
   ];
 
   if (loading) {
@@ -356,86 +311,10 @@ const MobileTimeline: React.FC<MobileTimelineProps> = ({ isGlobal = false }) => 
                 {filteredItems.length} elementos
               </p>
             </div>
-=======
-const MobileTimeline: React.FC<MobileTimelineProps> = () => {
-  const [items] = useState<TimelineItem[]>([]);
-  const [loading] = useState(true);
-  const [error] = useState<string | null>(null);
-  const [compactView, setCompactView] = useState(false);
-  const [viewType, setViewType] = useState<'projects' | 'tasks'>('projects');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Configuración de tabs
-  const viewTabs = [
-    {
-      id: 'projects',
-      label: 'Proyectos',
-      icon: <Calendar className="w-4 h-4" />,
-      content: <div>Proyectos</div>
-    },
-    {
-      id: 'tasks',
-      label: 'Tareas',
-      icon: <Target className="w-4 h-4" />,
-      content: <div>Tareas</div>
-    }
-  ];
-
-  // Función para manejar click en items del timeline
-  const handleItemClick = (item: TimelineItem) => {
-    console.log('Item clicked:', item);
-  };
-
-  // Filtrar items por búsqueda
-  const filteredItems = React.useMemo(() => {
-    if (!searchTerm) return items;
-    
-    return items.filter(item => 
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      item.group.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [items, searchTerm]);
-
-  if (loading) {
-    return (
-      <div className="p-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-red-800 dark:text-red-200">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Timeline
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Vista temporal de proyectos y tareas
-            </p>
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
           </div>
           
           <div className="flex items-center space-x-2">
             <Button
-<<<<<<< HEAD
               variant="ghost"
               size="sm"
               icon={compactView ? <EyeIcon className="w-4 h-4" /> : <EyeOffIcon className="w-4 h-4" />}
@@ -470,38 +349,12 @@ const MobileTimeline: React.FC<MobileTimelineProps> = () => {
       <div className="px-4">
         <MobileTabs
           tabs={viewTabs}
-          activeTab={selectedView}
-          onTabChange={(tabId) => setSelectedView(tabId as typeof selectedView)}
-=======
-              variant="outline"
-              size="sm"
-              onClick={() => setCompactView(!compactView)}
-            >
-              {compactView ? <EyeIcon className="w-4 h-4" /> : <EyeOffIcon className="w-4 h-4" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="mb-4">
-          <SearchInput
-            placeholder="Buscar en timeline..."
-            onSearch={setSearchTerm}
-            initialValue={searchTerm}
-          />
-        </div>
-
-        {/* Tabs */}
-        <MobileTabs
-          tabs={viewTabs}
-          defaultActiveTab={viewType}
-          onTabChange={(tabId) => setViewType(tabId as 'projects' | 'tasks')}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
+          defaultActiveTab={selectedView}
+          onTabChange={(tabId) => setSelectedView(tabId as 'projects' | 'tasks' | 'kpis')}
           variant="pills"
         />
       </div>
 
-<<<<<<< HEAD
       {/* Navegación temporal */}
       <div className="px-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
@@ -579,7 +432,6 @@ const MobileTimeline: React.FC<MobileTimelineProps> = () => {
   );
 };
 
-// Componente de contenido del timeline
 interface MobileTimelineContentProps {
   items: TimelineItem[];
   groups: TimelineGroup[];
@@ -589,14 +441,14 @@ interface MobileTimelineContentProps {
   viewType: 'projects' | 'tasks';
 }
 
-const MobileTimelineContent: React.FC<MobileTimelineContentProps> = ({
+function MobileTimelineContent({
   items,
   groups,
   dateRange,
   onItemClick,
   compactView,
   viewType
-}) => {
+}: MobileTimelineContentProps): React.ReactElement {
   if (items.length === 0) {
     return (
       <div className="text-center py-12">
@@ -618,7 +470,6 @@ const MobileTimelineContent: React.FC<MobileTimelineContentProps> = ({
           <MobileTimelineItemCompact
             key={item.id}
             item={item}
-            dateRange={dateRange}
             onClick={() => onItemClick(item)}
           />
         ))}
@@ -667,14 +518,17 @@ const MobileTimelineContent: React.FC<MobileTimelineContentProps> = ({
   );
 };
 
-// Componente de item del timeline
 interface MobileTimelineItemProps {
   item: TimelineItem;
   dateRange: { start: moment.Moment; end: moment.Moment };
   onClick: () => void;
 }
 
-const MobileTimelineItem: React.FC<MobileTimelineItemProps> = ({ item, dateRange, onClick }) => {
+function MobileTimelineItem({
+  item,
+  dateRange,
+  onClick
+}: MobileTimelineItemProps): React.ReactElement {
   const getItemPosition = (item: TimelineItem) => {
     const itemStart = item.start_time;
     const itemEnd = item.end_time;
@@ -705,13 +559,13 @@ const MobileTimelineItem: React.FC<MobileTimelineItemProps> = ({ item, dateRange
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2 flex-1 min-w-0">
-          {getStatusIcon(item.status)}
+          {getStatusIcon(item.status as TimelineItem['status'])}
           <span className="font-medium text-sm text-gray-900 dark:text-white truncate" title={item.title}>
             {item.title}
           </span>
         </div>
         <div className="flex items-center space-x-2 flex-shrink-0">
-          <div className={`w-2 h-2 rounded-full ${getPriorityColor(item.priority)}`} />
+          <div className={`w-2 h-2 rounded-full ${getPriorityColor(item.priority as TimelineItem['priority'])}`} />
           <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
             {item.progress}%
           </span>
@@ -751,8 +605,15 @@ const MobileTimelineItem: React.FC<MobileTimelineItemProps> = ({ item, dateRange
   );
 };
 
-// Componente de item compacto del timeline
-const MobileTimelineItemCompact: React.FC<MobileTimelineItemProps> = ({ item, onClick }) => {
+interface MobileTimelineItemCompactProps {
+  item: TimelineItem;
+  onClick: () => void;
+}
+
+function MobileTimelineItemCompact({
+  item,
+  onClick
+}: MobileTimelineItemCompactProps): React.ReactElement {
   return (
     <div 
       className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer"
@@ -760,7 +621,7 @@ const MobileTimelineItemCompact: React.FC<MobileTimelineItemProps> = ({ item, on
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2 flex-1 min-w-0">
-          {getStatusIcon(item.status)}
+          {getStatusIcon(item.status as TimelineItem['status'])}
           <div className="min-w-0">
             <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
               {item.title}
@@ -772,7 +633,7 @@ const MobileTimelineItemCompact: React.FC<MobileTimelineItemProps> = ({ item, on
         </div>
         
         <div className="flex items-center space-x-2 flex-shrink-0">
-          <div className={`w-2 h-2 rounded-full ${getPriorityColor(item.priority)}`} />
+          <div className={`w-2 h-2 rounded-full ${getPriorityColor(item.priority as TimelineItem['priority'])}`} />
           <div 
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: item.color || '#3B82F6' }}
@@ -786,12 +647,13 @@ const MobileTimelineItemCompact: React.FC<MobileTimelineItemProps> = ({ item, on
   );
 };
 
-// Componente de KPIs móviles
 interface MobileTimelineKPIsProps {
   kpis: any;
 }
 
-const MobileTimelineKPIs: React.FC<MobileTimelineKPIsProps> = ({ kpis }) => {
+function MobileTimelineKPIs({
+  kpis
+}: MobileTimelineKPIsProps): React.ReactElement {
   const kpiItems = [
     { label: 'Proyectos Activos', value: kpis.activeProjects || 0, icon: Target, color: 'blue' },
     { label: 'Tareas Pendientes', value: kpis.pendingTasks || 0, icon: Clock, color: 'yellow' },
@@ -823,13 +685,15 @@ const MobileTimelineKPIs: React.FC<MobileTimelineKPIsProps> = ({ kpis }) => {
   );
 };
 
-// Componente de detalle móvil
 interface MobileTimelineDetailProps {
   item: TimelineItem;
   onClose: () => void;
 }
 
-const MobileTimelineDetail: React.FC<MobileTimelineDetailProps> = ({ item, onClose }) => {
+function MobileTimelineDetail({
+  item,
+  onClose
+}: MobileTimelineDetailProps): React.ReactElement {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
       <div className="bg-white dark:bg-gray-800 w-full max-h-[80vh] rounded-t-xl p-4 overflow-y-auto">
@@ -870,13 +734,13 @@ const MobileTimelineDetail: React.FC<MobileTimelineDetailProps> = ({ item, onClo
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              {getStatusIcon(item.status)}
+              {getStatusIcon(item.status as TimelineItem['status'])}
               <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
                 {item.status.replace('_', ' ')}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${getPriorityColor(item.priority)}`} />
+              <div className={`w-3 h-3 rounded-full ${getPriorityColor(item.priority as TimelineItem['priority'])}`} />
               <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
                 {item.priority}
               </span>
@@ -899,86 +763,78 @@ const MobileTimelineDetail: React.FC<MobileTimelineDetailProps> = ({ item, onClo
             </div>
           </div>
         </div>
-=======
-      {/* Content */}
-      <div className="p-4">
-        {filteredItems.length === 0 ? (
-          <div className="text-center py-8">
-            <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">
-              No hay elementos en el timeline
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredItems.map((item) => (
-              <div
-                key={item.id}
-                className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
-                onClick={() => handleItemClick(item)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white">
-                      {item.title}
-                    </h3>
-                    {item.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {item.start_time.format('DD/MM/YYYY')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
       </div>
     </div>
   );
 };
 
-<<<<<<< HEAD
-// Componentes de estado de carga y error
-const MobileTimelineSkeleton: React.FC = () => (
-  <div className="space-y-4">
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-        <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+function MobileTimelineSkeleton(): React.ReactElement {
+  return (
+    <div className="space-y-4">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+      </div>
+      <div className="px-4 space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        ))}
       </div>
     </div>
-    <div className="px-4 space-y-3">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-      ))}
-    </div>
-  </div>
-);
+  );
+}
 
-const MobileTimelineError: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
-  <div className="text-center py-12 px-4">
-    <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-      <span className="text-red-500 text-2xl">⚠️</span>
-    </div>
-    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-      Error al cargar el timeline
-    </h2>
-    <p className="text-gray-600 dark:text-gray-400 mb-4">
-      No se pudieron cargar los datos
-    </p>
-    <Button variant="primary" onClick={onRetry}>
-      Reintentar
-    </Button>
-  </div>
-);
+const getStatusIcon = (status: TimelineItem['status'] | undefined) => {
+  switch (status) {
+    case 'completed':
+      return <CheckCircle className="w-4 h-4 text-green-500" />;
+    case 'in_progress':
+      return <Clock className="w-4 h-4 text-blue-500" />;
+    case 'pending':
+      return <Clock className="w-4 h-4 text-yellow-500" />;
+    case 'overdue':
+      return <AlertTriangle className="w-4 h-4 text-red-500" />;
+    default:
+      return <Clock className="w-4 h-4 text-gray-500" />;
+  }
+};
 
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
+const getPriorityColor = (priority: TimelineItem['priority'] | undefined) => {
+  switch (priority) {
+    case 'high':
+      return 'bg-red-500';
+    case 'medium':
+      return 'bg-yellow-500';
+    case 'low':
+      return 'bg-green-500';
+    default:
+      return 'bg-gray-400';
+  }
+};
+
+function MobileTimelineError({
+  onRetry
+}: {
+  onRetry: () => void;
+}): React.ReactElement {
+  return (
+    <div className="text-center py-12 px-4">
+      <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+        <span className="text-red-500 text-2xl">⚠️</span>
+      </div>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        Error al cargar el timeline
+      </h2>
+      <p className="text-gray-600 dark:text-gray-400 mb-4">
+        No se pudieron cargar los datos
+      </p>
+      <Button variant="primary" onClick={onRetry}>
+        Reintentar
+      </Button>
+    </div>
+  );
+}
+
 export default MobileTimeline;

@@ -32,12 +32,8 @@ import {
   useEstadisticasGenerales, 
   useHorasPorProyecto, 
   useHorasDiarias,
-<<<<<<< HEAD
   useFiltrosAvanzados,
   useProjectList
-=======
-  useFiltrosAvanzados
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 } from '@/hooks/useReportes';
 
 // Componentes de Reportes
@@ -78,12 +74,8 @@ const Reportes: React.FC = () => {
   const filtrosAPI = obtenerFiltrosParaAPI();
   const { data: horasPorProyecto, isLoading: loadingHorasProyecto, refetch: refetchHorasProyecto } = useHorasPorProyecto(filtrosAPI);
   const { data: horasDiarias, isLoading: loadingHorasDiarias, refetch: refetchHorasDiarias } = useHorasDiarias(filtrosAPI);
-<<<<<<< HEAD
   const { data: projectList, isLoading: loadingProjects } = useProjectList();
 
-=======
-  
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   // Refetch cuando cambien los filtros
   useEffect(() => {
     if (filtrosAPI.fechaInicio || filtrosAPI.fechaFin) {
@@ -93,11 +85,7 @@ const Reportes: React.FC = () => {
   }, [filtrosAPI, refetchHorasProyecto, refetchHorasDiarias]);
   
   // Estados de carga y error consolidados
-<<<<<<< HEAD
   const isLoading = loadingStats || loadingHorasProyecto || loadingHorasDiarias || loadingProjects;
-=======
-  const isLoading = loadingStats || loadingHorasProyecto || loadingHorasDiarias;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   const isError = errorStats;
 
   // Estado para controlar qué vista mostrar
@@ -207,14 +195,11 @@ const Reportes: React.FC = () => {
     refetchHorasDiarias();
   };
 
-<<<<<<< HEAD
-=======
   const handleAplicarFiltros = () => {
     aplicarFiltros(filtros);
     console.log('✅ Filtros aplicados');
   };
 
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   const handleLimpiarFiltros = () => {
     limpiarFiltros();
     console.log('🗑️ Filtros limpiados');
@@ -344,17 +329,11 @@ const Reportes: React.FC = () => {
                 <FiltrosAvanzados
                   filtros={filtros}
                   onFiltrosChange={aplicarFiltros}
-<<<<<<< HEAD
-                  onLimpiarFiltros={handleLimpiarFiltros}
-                  isLoading={isLoading}
-                  proyectosDisponibles={projectList || []}
-=======
                   onAplicarFiltros={handleAplicarFiltros}
                   onLimpiarFiltros={handleLimpiarFiltros}
                   isLoading={isLoading}
-                  proyectosDisponibles={[]} // TODO: Obtener de la API
-                  etiquetasDisponibles={[]} // TODO: Obtener de la API
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
+                  proyectosDisponibles={projectList || []}
+                  etiquetasDisponibles={[]}
                 />
               </div>
 
@@ -453,7 +432,6 @@ const Reportes: React.FC = () => {
               {/* Gráficos Integrados con Datos Reales */}
               {isMobile ? (
                 <div className="mt-8">
-<<<<<<< HEAD
                   <MobileCharts
                     charts={[
                       {
@@ -493,9 +471,6 @@ const Reportes: React.FC = () => {
                     showControls={true}
                     showExport={true}
                   />
-=======
-                  <MobileCharts />
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">

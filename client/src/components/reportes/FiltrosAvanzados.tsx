@@ -7,10 +7,7 @@ import React, { useState } from 'react';
 import {
   CalendarIcon,
   FilterIcon,
-<<<<<<< HEAD
-=======
   CheckIcon,
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   ChevronDownIcon,
   RotateCcwIcon,
   FolderIcon,
@@ -51,17 +48,11 @@ export interface FiltrosAvanzadosState {
 interface FiltrosAvanzadosProps {
   filtros: FiltrosAvanzadosState;
   onFiltrosChange: (filtros: FiltrosAvanzadosState) => void;
-<<<<<<< HEAD
-  onLimpiarFiltros: () => void;
-  isLoading?: boolean;
-  proyectosDisponibles?: Array<{ id: string; name: string; status?: string; priority?: string }>;
-=======
   onAplicarFiltros: () => void;
   onLimpiarFiltros: () => void;
   isLoading?: boolean;
-  proyectosDisponibles?: Array<{ id: string; name: string; status: string; priority: string }>;
+  proyectosDisponibles?: Array<{ id: string; name: string; status?: string; priority?: string }>;
   etiquetasDisponibles?: string[];
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 }
 
 // ======================================
@@ -71,10 +62,7 @@ interface FiltrosAvanzadosProps {
 const FiltrosAvanzados: React.FC<FiltrosAvanzadosProps> = ({
   filtros,
   onFiltrosChange,
-<<<<<<< HEAD
-=======
   onAplicarFiltros,
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   onLimpiarFiltros,
   isLoading = false,
   proyectosDisponibles = []
@@ -200,8 +188,6 @@ const FiltrosAvanzados: React.FC<FiltrosAvanzadosProps> = ({
             <ChevronDownIcon className={`w-4 h-4 mr-2 transition-transform ${mostrarFiltros ? 'rotate-180' : ''}`} />
             {mostrarFiltros ? 'Ocultar' : 'Mostrar'}
           </Button>
-<<<<<<< HEAD
-=======
           <Button
             variant="primary"
             size="sm"
@@ -211,7 +197,6 @@ const FiltrosAvanzados: React.FC<FiltrosAvanzadosProps> = ({
             <CheckIcon className="w-4 h-4 mr-2" />
             Aplicar
           </Button>
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
         </div>
       </div>
 

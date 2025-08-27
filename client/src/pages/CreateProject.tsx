@@ -176,14 +176,11 @@ const CreateProject: React.FC = () => {
         color: selectedColor,
         stack_tecnologico: selectedTech,
         etiquetas: selectedTags,
-<<<<<<< HEAD
         // Limpiar datos antes de enviar
-        start_date: data.start_date || null,
-        end_date: data.end_date || null,
+        start_date: data.start_date || undefined,
+        end_date: data.end_date || undefined,
         presupuesto_estimado: isNaN(Number(data.presupuesto_estimado)) ? undefined : Number(data.presupuesto_estimado),
         horas_estimadas: isNaN(Number(data.horas_estimadas)) ? undefined : Number(data.horas_estimadas),
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
       };
       
       const newProject = await createProject.mutateAsync(projectData);

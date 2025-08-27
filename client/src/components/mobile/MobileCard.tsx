@@ -1,9 +1,5 @@
 import React from 'react';
-<<<<<<< HEAD
-import { LucideIcon, MoreHorizontal, Star, Clock, User, Tag } from 'lucide-react';
-=======
 import { LucideIcon, Star, Clock, User, Tag } from 'lucide-react';
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 
 interface CardAction {
   label: string;

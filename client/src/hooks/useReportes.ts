@@ -8,10 +8,7 @@ import {
   obtenerHorasPorProyecto, 
   obtenerHorasDiarias 
 } from '@/services/reporteService';
-<<<<<<< HEAD
 import { getProjectList } from '@/services/projectService';
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
 import React from 'react';
 import {
   obtenerSemanaActual,
@@ -61,7 +58,6 @@ export const useHorasDiarias = (filtros?: { fechaInicio?: string; fechaFin?: str
 };
 
 /**
-<<<<<<< HEAD
  * Hook para obtener la lista de proyectos para filtros
  */
 export const useProjectList = () => {
@@ -74,8 +70,6 @@ export const useProjectList = () => {
 };
 
 /**
-=======
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
  * Hook para obtener productividad por día de la semana
  */
 export const useProductividadPorDia = () => {

@@ -48,33 +48,22 @@ class TaskService {
       ? `${this.basePath}?${buildQueryParams(filters)}`
       : this.basePath;
 
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<TaskWithProject[]>>(endpoint);
     return response.data || [];
-=======
-    const response = await apiClient.get<TaskWithProject[]>(endpoint);
-    return response || [];
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Obtener tareas de un proyecto específico
    */
   async getProjectTasks(projectId: string): Promise<Task[]> {
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<Task[]>>(`${this.basePath}/project/${projectId}`);
     return response.data || [];
-=======
-    const response = await apiClient.get<Task[]>(`${this.basePath}/project/${projectId}`);
-    return response || [];
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Obtener una tarea específica por ID
    */
   async getTaskById(id: string): Promise<Task> {
-<<<<<<< HEAD
     const response = await apiClient.get<ApiResponse<Task>>(`${this.basePath}/${id}`);
     
     if (!response.data) {
@@ -82,22 +71,12 @@ class TaskService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.get<Task>(`${this.basePath}/${id}`);
-    
-    if (!response) {
-      throw new Error('Tarea no encontrada');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Crear una nueva tarea
    */
   async createTask(taskData: CreateTaskForm): Promise<Task> {
-<<<<<<< HEAD
     const response = await apiClient.post<ApiResponse<Task>>(this.basePath, taskData);
     
     if (!response.data) {
@@ -105,22 +84,12 @@ class TaskService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.post<Task>(this.basePath, taskData);
-    
-    if (!response) {
-      throw new Error('Error al crear tarea');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Actualizar una tarea existente
    */
   async updateTask(id: string, taskData: UpdateTaskForm): Promise<Task> {
-<<<<<<< HEAD
     const response = await apiClient.put<ApiResponse<Task>>(`${this.basePath}/${id}`, taskData);
     
     if (!response.data) {
@@ -128,22 +97,12 @@ class TaskService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.put<Task>(`${this.basePath}/${id}`, taskData);
-    
-    if (!response) {
-      throw new Error('Error al actualizar tarea');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Actualizar posición de tarea (para Kanban)
    */
   async updateTaskPosition(id: string, positionData: TaskPositionUpdate): Promise<Task> {
-<<<<<<< HEAD
     const response = await apiClient.patch<ApiResponse<Task>>(`${this.basePath}/${id}/position`, positionData);
     
     if (!response.data) {
@@ -151,22 +110,12 @@ class TaskService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.patch<Task>(`${this.basePath}/${id}/position`, positionData);
-    
-    if (!response) {
-      throw new Error('Error al actualizar posición de tarea');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Completar una tarea
    */
   async completeTask(id: string): Promise<Task> {
-<<<<<<< HEAD
     const response = await apiClient.patch<ApiResponse<Task>>(`${this.basePath}/${id}/complete`);
     
     if (!response.data) {
@@ -174,22 +123,12 @@ class TaskService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.patch<Task>(`${this.basePath}/${id}/complete`);
-    
-    if (!response) {
-      throw new Error('Error al completar tarea');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
    * Reabrir una tarea completada
    */
   async reopenTask(id: string): Promise<Task> {
-<<<<<<< HEAD
     const response = await apiClient.patch<ApiResponse<Task>>(`${this.basePath}/${id}/reopen`);
     
     if (!response.data) {
@@ -197,15 +136,6 @@ class TaskService {
     }
     
     return response.data;
-=======
-    const response = await apiClient.patch<Task>(`${this.basePath}/${id}/reopen`);
-    
-    if (!response) {
-      throw new Error('Error al reabrir tarea');
-    }
-    
-    return response;
->>>>>>> fe79550a8794a062e787dd7640a6ead6fd5228ba
   }
 
   /**
