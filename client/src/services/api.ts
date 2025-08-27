@@ -42,12 +42,25 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
+    const finalHeaders = new Headers(this.defaultHeaders);
+
+    // Añadir token de autenticación si existe en localStorage
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      finalHeaders.set('Authorization', `Bearer ${token}`);
+    }
+
+    // Añadir las cabeceras de las opciones específicas de la petición
+    if (options.headers) {
+      const optionsHeaders = new Headers(options.headers);
+      optionsHeaders.forEach((value, key) => {
+        finalHeaders.set(key, value);
+      });
+    }
+
     const config: RequestInit = {
-      headers: {
-        ...this.defaultHeaders,
-        ...options.headers,
-      },
       ...options,
+      headers: finalHeaders,
     };
 
     try {

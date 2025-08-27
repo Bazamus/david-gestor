@@ -41,11 +41,7 @@ const Login: React.FC = () => {
         });
         
         // Redirigir según el rol
-        if ((result as any).user?.role === 'admin') {
-          navigate('/dashboard');
-        } else {
-          navigate('/reportes');
-        }
+        navigate('/dashboard');
       } else {
         addNotification({ 
           title: 'Error de autenticación',

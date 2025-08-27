@@ -16,7 +16,25 @@ import {
 // ======================================
 export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const stats = await supabaseService.getDashboardStats();
+    const statsData = await supabaseService.getDashboardStats();
+
+    // Si no hay estadísticas, devolver un objeto con valores por defecto
+    const stats: DashboardStats = statsData || {
+      total_projects: 0,
+      active_projects: 0,
+      completed_tasks: 0,
+      pending_tasks: 0,
+      overdue_tasks: 0,
+      total_tasks: 0,
+      productivity_stats: {
+        productivity_percentage: 0,
+        total_estimated_hours: 0,
+        total_actual_hours: 0,
+        tasks_completed_today: 0,
+        tasks_completed_this_week: 0,
+      },
+      upcoming_tasks: [],
+    };
 
     const response: ApiResponse<DashboardStats> = {
       success: true,

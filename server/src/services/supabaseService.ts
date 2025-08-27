@@ -607,8 +607,15 @@ class SupabaseService {
       // Llamada a la función RPC para obtener estadísticas globales
       const { data: stats, error } = await this.supabase.rpc('get_global_stats');
 
-      if (error || !stats) {
-        throw new Error(`Error al llamar a get_global_stats: ${error?.message || 'No data returned'}`);
+      if (error) {
+        throw new Error(`Error al llamar a get_global_stats: ${error.message}`);
+      }
+
+      // La función RPC devuelve un array, incluso si es una sola fila.
+      const statsData = stats && stats.length > 0 ? stats[0] : null;
+
+      if (!statsData) {
+        throw new Error('No se recibieron datos de estadísticas desde la base de datos.');
       }
 
       // Tareas próximas a vencer (próximos 7 días)
@@ -625,17 +632,17 @@ class SupabaseService {
         .limit(10);
 
       return {
-        total_projects: stats.total_projects || 0,
-        active_projects: stats.active_projects || 0,
-        total_tasks: stats.total_tasks || 0,
-        completed_tasks: stats.completed_tasks || 0,
-        pending_tasks: stats.pending_tasks || 0,
-        overdue_tasks: stats.overdue_tasks || 0,
+        total_projects: statsData.total_projects || 0,
+        active_projects: statsData.active_projects || 0,
+        total_tasks: statsData.total_tasks || 0,
+        completed_tasks: statsData.completed_tasks || 0,
+        pending_tasks: statsData.pending_tasks || 0,
+        overdue_tasks: statsData.overdue_tasks || 0,
         upcoming_tasks: upcomingTasks || [],
         recent_activity: [], // TODO: Implementar actividad reciente
         productivity_stats: {
-          productivity_percentage: stats.productivity_percentage || 0,
-          total_actual_hours: stats.total_actual_hours || 0,
+          productivity_percentage: statsData.productivity_percentage || 0,
+          total_actual_hours: statsData.total_actual_hours || 0,
           // Los siguientes son TODOs como en la implementación original
           tasks_completed_today: 0,
           tasks_completed_this_week: 0,

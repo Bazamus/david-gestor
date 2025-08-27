@@ -60,7 +60,7 @@ const Tasks: React.FC = () => {
     if (statusParam) {
       // Mapear 'completed' a TaskStatus.DONE
       if (statusParam === 'completed') {
-        initialFilters.status = [TaskStatus.DONE, TaskStatus.COMPLETADA];
+        initialFilters.status = [TaskStatus.DONE];
       } else {
         // Para otros estados, usar el valor directamente
         initialFilters.status = [statusParam as TaskStatus];

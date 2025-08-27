@@ -32,23 +32,25 @@ BEGIN
             COUNT(*) FILTER (WHERE status = 'done') AS completed_tasks,
             COUNT(*) FILTER (WHERE status != 'done') AS pending_tasks,
             COUNT(*) FILTER (WHERE status != 'done' AND due_date < CURRENT_TIMESTAMP) AS overdue_tasks,
-            COALESCE(SUM(actual_hours), 0)::NUMERIC AS total_time_logged -- Cast a NUMERIC
+            COALESCE(SUM(actual_hours), 0)::NUMERIC AS total_time_logged
         FROM tasks
     )
     SELECT
-        p.total_projects,
-        p.active_projects,
-        p.completed_projects,
-        t.total_tasks,
-        t.completed_tasks,
-        t.pending_tasks,
-        t.overdue_tasks,
-        t.total_time_logged AS total_actual_hours, -- Renombrar para coincidir
+        COALESCE(p.total_projects, 0),
+        COALESCE(p.active_projects, 0),
+        COALESCE(p.completed_projects, 0),
+        COALESCE(t.total_tasks, 0),
+        COALESCE(t.completed_tasks, 0),
+        COALESCE(t.pending_tasks, 0),
+        COALESCE(t.overdue_tasks, 0),
+        COALESCE(t.total_time_logged, 0) AS total_actual_hours,
         CASE
-            WHEN t.total_tasks > 0 THEN ROUND((t.completed_tasks::NUMERIC / t.total_tasks::NUMERIC) * 100, 2)
+            WHEN COALESCE(t.total_tasks, 0) > 0 THEN ROUND((COALESCE(t.completed_tasks, 0)::NUMERIC / COALESCE(t.total_tasks, 1)::NUMERIC) * 100, 2)
             ELSE 0
         END AS productivity_percentage
-    FROM project_stats p, task_stats t;
+    FROM (SELECT 1) AS ref
+    LEFT JOIN project_stats p ON true
+    LEFT JOIN task_stats t ON true;
 END;
 $$ LANGUAGE plpgsql;
 

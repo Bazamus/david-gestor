@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { AuthService } from '../services/authService';
 
 export interface User {
   id: string;
@@ -11,9 +12,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  login: (username: string, password: string) => Promise<{ success: boolean; message?: string; }>;
   logout: () => void;
-  verifyToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,77 +27,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Función interna para verificar token sin dependencias
-  const verifyTokenInternal = async (tokenToVerify: string): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/auth/verify', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${tokenToVerify}`,
-        },
+  const logout = useCallback(() => {
+    const tokenToInvalidate = localStorage.getItem('authToken');
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+
+    if (tokenToInvalidate) {
+      AuthService.logout(tokenToInvalidate).catch(error => {
+        console.error('Error al notificar al servidor sobre el logout:', error);
       });
-
-      const data = await response.json();
-
-      if (data.valid) {
-        setUser(data.user);
-        setToken(tokenToVerify);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        return true;
-      } else {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        setUser(null);
-        setToken(null);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error verificando token:', error);
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      setUser(null);
-      setToken(null);
-      return false;
     }
-  };
+  }, []);
 
-  // Verificar token al cargar la aplicación
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('authToken');
-      const storedUser = localStorage.getItem('user');
-      
       if (storedToken) {
-        // Primero cargar usuario desde localStorage como fallback
-        if (storedUser) {
-          try {
-            const userData = JSON.parse(storedUser);
-            setUser(userData);
+        try {
+          console.log('Token encontrado. Verificando sesión...');
+          const response = await AuthService.getCurrentUser(storedToken);
+          if (response.success && response.user) {
+            console.log('Verificación exitosa. Usuario autenticado.');
+            setUser(response.user);
             setToken(storedToken);
-          } catch (error) {
-            console.error('Error parsing stored user:', error);
+          } else {
+            console.warn('Token inválido. Limpiando sesión.');
+            logout();
           }
-        }
-        
-        // Luego verificar token con el servidor
-        const isValid = await verifyTokenInternal(storedToken);
-        if (!isValid) {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          setToken(null);
-          setUser(null);
+        } catch (error) {
+          console.error('Fallo en la verificación del token. Limpiando sesión.', error);
+          logout();
         }
       } else {
-        // Si no hay token, limpiar usuario también
-        localStorage.removeItem('user');
-        setUser(null);
-        setToken(null);
+        console.log('No se encontró token. Sesión no iniciada.');
       }
       setIsLoading(false);
     };
 
     initializeAuth();
-  }, []);
+  }, [logout]);
 
   const login = async (username: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
@@ -126,36 +96,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    
-    // Llamar al endpoint de logout (opcional)
-    fetch('/api/auth/logout', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    }).catch(console.error);
-  };
-
-  const verifyToken = async (): Promise<boolean> => {
-    const storedToken = localStorage.getItem('authToken');
-    if (!storedToken) return false;
-    
-    return await verifyTokenInternal(storedToken);
-  };
-
   const value: AuthContextType = {
     user,
     token,
     isLoading,
     login,
     logout,
-    verifyToken,
   };
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-gray-900">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={value}>

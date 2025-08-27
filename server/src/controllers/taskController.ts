@@ -16,6 +16,29 @@ import {
 // OBTENER TODAS LAS TAREAS
 // ======================================
 export const getTasks = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const statusQuery = req.query.status as string;
+
+  // Manejo especial para el estado 'overdue'
+  if (statusQuery === 'overdue') {
+    const overdueFilters: TaskFilters = {
+      ...req.query,
+      status: [TaskStatus.TODO, TaskStatus.IN_PROGRESS, TaskStatus.NADA],
+      due_date_to: new Date().toISOString(),
+    };
+
+    try {
+      const tasks = await supabaseService.getTasks(overdueFilters);
+      const response: ApiResponse<Task[]> = {
+        success: true,
+        data: tasks,
+        message: `${tasks.length} tareas vencidas encontradas`,
+      };
+      return res.status(200).json(response);
+    } catch (error) {
+      return next(createError(`Error al obtener tareas vencidas: ${error}`, 500));
+    }
+  }
+
   const filters: TaskFilters = {
     project_id: req.query.project_id as string,
     status: req.query.status ? (req.query.status as string).split(',') as TaskStatus[] : undefined,
