@@ -6,6 +6,22 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ======================================
+-- TABLA: users (autenticación)
+-- ======================================
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username VARCHAR(50) UNIQUE NOT NULL CHECK (length(username) > 0),
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) DEFAULT 'cliente' CHECK (role IN ('admin', 'cliente')),
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Validaciones
+    CONSTRAINT valid_username_length CHECK (length(trim(username)) BETWEEN 1 AND 50)
+);
+
+-- ======================================
 -- TABLA: projects
 -- ======================================
 CREATE TABLE IF NOT EXISTS projects (
@@ -68,6 +84,10 @@ CREATE TABLE IF NOT EXISTS time_logs (
 -- ÍNDICES PARA PERFORMANCE
 -- ======================================
 
+-- Usuarios
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+
 -- Proyectos
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at DESC);
@@ -98,19 +118,10 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Triggers para proyectos
-DROP TRIGGER IF EXISTS update_projects_updated_at ON projects;
-CREATE TRIGGER update_projects_updated_at
-    BEFORE UPDATE ON projects
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
--- Triggers para tareas
-DROP TRIGGER IF EXISTS update_tasks_updated_at ON tasks;
-CREATE TRIGGER update_tasks_updated_at
-    BEFORE UPDATE ON tasks
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+-- Triggers para updated_at
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ======================================
 -- POLÍTICAS RLS (Row Level Security)
