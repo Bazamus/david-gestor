@@ -10,6 +10,7 @@
     "build": "npm run build:client",
     "build:server": "cd server && npm run build",
     "build:client": "cd client && npm run build",
+    "build:render": "npm run build:server && npm run build:client",
     "install:all": "npm install && cd server && npm install && cd ../client && npm install",
     "lint": "npm run lint:server && npm run lint:client",
     "lint:server": "cd server && npm run lint",

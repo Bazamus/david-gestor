@@ -88,6 +88,44 @@ npm run dev
 
 El frontend estará disponible en `http://localhost:3000` y el backend en `http://localhost:5000`.
 
+## 🚀 Deploy en Render
+
+### **Configuración Automática**
+
+El proyecto está configurado para deploy automático en Render. Solo necesitas:
+
+1. **Crear cuenta en Render**
+   - Ve a [render.com](https://render.com)
+   - Conecta tu cuenta de GitHub
+
+2. **Importar el repositorio**
+   - Selecciona `Bazamus/david-gestor`
+   - Render detectará automáticamente la configuración
+
+3. **Configurar variables de entorno**
+   - **Backend:**
+     ```env
+     NODE_ENV=production
+     SUPABASE_URL=tu_url_supabase
+     SUPABASE_ANON_KEY=tu_anon_key
+     SUPABASE_SERVICE_KEY=tu_service_key
+     JWT_SECRET=tu_jwt_secret
+     FRONTEND_URL=https://tu-app.onrender.com
+     ```
+   - **Frontend:**
+     ```env
+     VITE_API_URL=https://tu-api.onrender.com/api
+     VITE_SUPABASE_URL=tu_url_supabase
+     VITE_SUPABASE_ANON_KEY=tu_anon_key
+     ```
+
+4. **Deploy automático**
+   - Cada push a `main` hará deploy automático
+
+### **URLs del Deploy**
+- **Frontend:** `https://david-gestor.onrender.com`
+- **Backend:** `https://david-gestor-api.onrender.com`
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -115,6 +153,7 @@ david-gestor/
 ├── database/              # Scripts SQL de Supabase
 │   ├── schema.sql
 │   └── seed.sql
+├── render.yaml            # Configuración de Render
 └── docus/                 # Documentación
     ├── README.md
     └── project_management_prompt.md
@@ -131,6 +170,7 @@ npm run dev:server       # Solo backend
 # Build
 npm run build           # Build del frontend
 npm run build:server    # Build del backend
+npm run build:render    # Build completo para Render
 
 # Linting
 npm run lint            # Lint de todo el proyecto
@@ -209,10 +249,6 @@ npm run setup           # Instalar dependencias y build
 - **Índices optimizados** para consultas rápidas
 - **Relaciones bien definidas** entre tablas
 - **Triggers** para estadísticas automáticas
-
-## 🚀 Despliegue
-
-El proyecto está preparado para ser desplegado en cualquier plataforma que soporte Node.js y React. Las configuraciones específicas de deploy se pueden agregar según la plataforma elegida.
 
 ## 🤝 Contribución
 
