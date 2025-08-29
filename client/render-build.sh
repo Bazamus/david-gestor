@@ -4,7 +4,7 @@
 echo "🚀 Iniciando build del cliente para Render..."
 
 # Instalar dependencias
-npm ci --only=production
+npm install
 
 # Build del proyecto
 npm run build
