@@ -447,9 +447,12 @@ class SupabaseService {
   }
 
   async updateTimeEntry(id: string, updateData: UpdateTimeEntryRequest): Promise<TimeEntry> {
+    // Filtrar campos que no existen en la tabla time_logs
+    const { project_id, task_title, project_name, effective_rate, billable_amount, ...validUpdateData } = updateData as any;
+
     const { data, error } = await this.supabase
       .from('time_logs')
-      .update(updateData)
+      .update(validUpdateData)
       .eq('id', id)
       .select()
       .single();

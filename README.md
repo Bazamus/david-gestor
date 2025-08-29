@@ -1,7 +1,5 @@
 # 🚀 Gestor de Proyectos Personal
 
-<!-- Deploy timestamp: 2025-01-11 19:21 -->
-
 Aplicación web completa para gestión de proyectos personales desarrollada con **React**, **Node.js**, **TypeScript** y **Supabase**.
 
 ## 📋 Características
@@ -15,8 +13,7 @@ Aplicación web completa para gestión de proyectos personales desarrollada con 
 - ✅ **Modo oscuro/claro** para mejor experiencia
 - ✅ **Diseño responsivo** optimizado para móviles
 - ✅ **Exportación de datos** en JSON/CSV
-- ✅ **Reportes avanzados** con filtros y gráficos
-- ✅ **Timeline visual** de proyectos y tareas
+- ✅ **Sistema de reportes** con gráficos y estadísticas
 
 ## 🏗️ Arquitectura
 
@@ -48,8 +45,8 @@ Aplicación web completa para gestión de proyectos personales desarrollada con 
 
 ### **1. Clonar el repositorio**
 ```bash
-git clone https://github.com/Bazamus/gestor-proyectos.git
-cd gestor-proyectos
+git clone https://github.com/Bazamus/david-gestor.git
+cd david-gestor
 ```
 
 ### **2. Configurar Supabase**
@@ -65,236 +62,159 @@ cd gestor-proyectos
 
 **Backend:**
 ```bash
-cd project-manager/server
-cp .env.example .env
+cd server
+cp env.example .env
 # Editar .env con tus credenciales de Supabase
 ```
 
 **Frontend:**
 ```bash
-cd project-manager/client
-cp .env.example .env
+cd client
+cp env.example .env
 # Editar .env con tus credenciales de Supabase
 ```
 
 ### **4. Instalar dependencias**
-
-**Backend:**
 ```bash
-cd project-manager/server
-npm install
-```
-
-**Frontend:**
-```bash
-cd project-manager/client
-npm install
+# Instalar todas las dependencias
+npm run install:all
 ```
 
 ### **5. Ejecutar en desarrollo**
-
-**Terminal 1 - Backend:**
 ```bash
-cd project-manager/server
+# Ejecutar frontend y backend simultáneamente
 npm run dev
 ```
 
-**Terminal 2 - Frontend:**
-```bash
-cd project-manager/client
-npm run dev
-```
+El frontend estará disponible en `http://localhost:3000` y el backend en `http://localhost:5000`.
 
-La aplicación estará disponible en:
-- Frontend: `http://localhost:3000`
-- Backend: `http://localhost:5000`
-
-## 📦 Comandos Disponibles
-
-### **Backend**
-```bash
-npm run dev        # Ejecutar en desarrollo
-npm run build      # Compilar TypeScript
-npm run start      # Ejecutar en producción
-npm run lint       # Linting con ESLint
-npm run lint:fix   # Arreglar problemas de linting
-```
-
-### **Frontend**
-```bash
-npm run dev        # Ejecutar en desarrollo
-npm run build      # Build para producción
-npm run preview    # Preview del build
-npm run lint       # Linting con ESLint
-npm run lint:fix   # Arreglar problemas de linting
-```
-
-## 🚀 Despliegue en Vercel
-
-### **1. Preparar el repositorio**
-```bash
-# Asegúrate de que todos los cambios estén commitados
-git add .
-git commit -m "Preparar para despliegue en Vercel"
-git push origin main
-```
-
-### **2. Conectar con Vercel**
-
-1. Ve a [Vercel Dashboard](https://vercel.com/dashboard)
-2. Haz clic en "New Project"
-3. Importa el repositorio `Bazamus/gestor-proyectos`
-4. Configura las variables de entorno:
-
-### **3. Variables de Entorno en Vercel**
-
-```env
-# Supabase
-SUPABASE_URL=tu_url_supabase
-SUPABASE_ANON_KEY=tu_anon_key
-SUPABASE_SERVICE_KEY=tu_service_key
-
-# Frontend
-VITE_API_URL=https://tu-app.vercel.app/api
-
-# Backend
-JWT_SECRET=tu_jwt_secret
-NODE_ENV=production
-```
-
-### **4. Configuración de Build**
-
-Vercel detectará automáticamente la configuración desde `vercel.json`:
-- **Frontend**: Se construirá desde `client/`
-- **Backend**: Se ejecutará desde `server/src/index.ts`
-- **Rutas**: Las rutas `/api/*` irán al backend, el resto al frontend
-
-### **5. Desplegar**
-
-Vercel desplegará automáticamente cuando hagas push a la rama `main`.
-
-## 🗂️ Estructura del Proyecto
+## 📁 Estructura del Proyecto
 
 ```
-project-manager/
+david-gestor/
 ├── client/                 # Frontend React
 │   ├── src/
 │   │   ├── components/     # Componentes reutilizables
-│   │   ├── pages/          # Páginas principales
-│   │   ├── hooks/          # Custom hooks
-│   │   ├── services/       # APIs y servicios
-│   │   ├── types/          # Tipos TypeScript
-│   │   └── utils/          # Utilidades
+│   │   ├── pages/         # Páginas de la aplicación
+│   │   ├── hooks/         # Custom hooks
+│   │   ├── services/      # Servicios de API
+│   │   ├── types/         # Tipos TypeScript
+│   │   ├── utils/         # Utilidades
+│   │   └── contexts/      # Contextos de React
 │   ├── package.json
-│   └── tailwind.config.js
+│   └── vite.config.ts
 ├── server/                 # Backend Node.js
 │   ├── src/
-│   │   ├── routes/         # Rutas de la API
-│   │   ├── controllers/    # Lógica de controladores
-│   │   ├── middleware/     # Middleware personalizado
-│   │   ├── services/       # Servicios de negocio
-│   │   └── types/          # Tipos TypeScript
+│   │   ├── routes/        # Rutas de la API
+│   │   ├── controllers/   # Controladores
+│   │   ├── middleware/    # Middleware personalizado
+│   │   ├── services/      # Servicios de negocio
+│   │   └── types/         # Tipos TypeScript
 │   ├── package.json
 │   └── .env
 ├── database/              # Scripts SQL de Supabase
 │   ├── schema.sql
 │   └── seed.sql
-├── docus/                 # Documentación
-├── vercel.json           # Configuración de Vercel
-└── README.md
+└── docus/                 # Documentación
+    ├── README.md
+    └── project_management_prompt.md
 ```
 
-## 🔧 Configuración de Desarrollo
+## 🔧 Scripts Disponibles
 
-### **Variables de Entorno de Desarrollo**
+```bash
+# Desarrollo
+npm run dev              # Frontend + Backend
+npm run dev:client       # Solo frontend
+npm run dev:server       # Solo backend
 
-**Backend (.env):**
-```env
-NODE_ENV=development
-PORT=5000
-SUPABASE_URL=tu_url_supabase
-SUPABASE_ANON_KEY=tu_anon_key
-SUPABASE_SERVICE_KEY=tu_service_key
-JWT_SECRET=tu_jwt_secret
-DISABLE_RATE_LIMIT=true
+# Build
+npm run build           # Build del frontend
+npm run build:server    # Build del backend
+
+# Linting
+npm run lint            # Lint de todo el proyecto
+npm run lint:fix        # Lint y auto-fix
+
+# Utilidades
+npm run clean           # Limpiar node_modules y dist
+npm run setup           # Instalar dependencias y build
 ```
 
-**Frontend (.env):**
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_SUPABASE_URL=tu_url_supabase
-VITE_SUPABASE_ANON_KEY=tu_anon_key
-```
+## 🌐 API Endpoints
 
-## 🛠️ Tecnologías Utilizadas
+### **Autenticación**
+- `POST /api/auth/login` - Iniciar sesión
+- `POST /api/auth/logout` - Cerrar sesión
 
-### **Frontend**
-- **React 18** con TypeScript
-- **React Router DOM** para navegación
-- **React Query** para gestión de estado
-- **React Hook Form** para formularios
-- **@dnd-kit** para drag & drop
-- **Lucide React** para iconos
-- **Tailwind CSS** para estilos
-- **Framer Motion** para animaciones
-- **Recharts** para gráficos
+### **Proyectos**
+- `GET /api/projects` - Listar proyectos
+- `POST /api/projects` - Crear proyecto
+- `GET /api/projects/:id` - Obtener proyecto
+- `PUT /api/projects/:id` - Actualizar proyecto
+- `DELETE /api/projects/:id` - Eliminar proyecto
 
-### **Backend**
-- **Node.js** con Express
-- **TypeScript** para tipado estático
-- **Supabase** como base de datos
-- **Express Validator** para validaciones
-- **Helmet** para seguridad
-- **CORS** para comunicación cross-origin
-
-### **Base de Datos**
-- **PostgreSQL** gestionado por Supabase
-- **Row Level Security (RLS)**
-- **Real-time subscriptions**
-
-## 📊 Funcionalidades Principales
-
-### **Gestión de Proyectos**
-- Crear, editar y eliminar proyectos
-- Estados: planning, active, on_hold, completed, archived
-- Fechas de inicio y fin
-- Colores personalizados
-- Estadísticas de progreso
-
-### **Gestión de Tareas**
-- Crear, editar y eliminar tareas
-- Estados: todo, in_progress, done
-- Prioridades: low, medium, high, urgent
-- Fechas de vencimiento
-- Dependencias entre tareas
-- Adjuntar archivos
-
-### **Tablero Kanban**
-- Drag & drop para mover tareas
-- Columnas por estado
-- Filtros por proyecto
-- Búsqueda en tiempo real
+### **Tareas**
+- `GET /api/tasks` - Listar tareas
+- `POST /api/tasks` - Crear tarea
+- `GET /api/tasks/:id` - Obtener tarea
+- `PUT /api/tasks/:id` - Actualizar tarea
+- `DELETE /api/tasks/:id` - Eliminar tarea
+- `PATCH /api/tasks/:id/position` - Actualizar posición (Kanban)
 
 ### **Dashboard**
-- Estadísticas generales
-- Gráficos de progreso
-- Tareas pendientes
-- Proyectos activos
-- Métricas de productividad
+- `GET /api/dashboard/stats` - Estadísticas del dashboard
+
+### **Búsqueda**
+- `GET /api/search` - Búsqueda global
+
+### **Time Tracking**
+- `GET /api/time-entries` - Listar entradas de tiempo
+- `POST /api/time-entries` - Crear entrada de tiempo
+- `PUT /api/time-entries/:id` - Actualizar entrada de tiempo
+- `DELETE /api/time-entries/:id` - Eliminar entrada de tiempo
 
 ### **Reportes**
-- Filtros avanzados
-- Exportación a PDF
-- Gráficos interactivos
-- Análisis de tiempo
+- `GET /api/reportes` - Generar reportes
 
-### **Timeline**
-- Vista cronológica de proyectos
-- Línea de tiempo de tareas
-- KPIs visuales
-- Filtros por fecha
+## 🎨 Características de UI/UX
 
-## 🤝 Contribuir
+- **Diseño responsivo** optimizado para móviles y desktop
+- **Modo oscuro/claro** con persistencia
+- **Animaciones suaves** con Framer Motion
+- **Componentes reutilizables** con Tailwind CSS
+- **Feedback visual** con notificaciones toast
+- **Loading states** elegantes
+- **Empty states** informativos
+
+## 🔒 Seguridad
+
+- **Autenticación JWT** con tokens seguros
+- **Validación de datos** con Express Validator
+- **CORS configurado** para desarrollo y producción
+- **Helmet** para headers de seguridad
+- **Rate limiting** para prevenir abuso
+- **Sanitización de inputs** automática
+
+## 📊 Base de Datos
+
+### **Tablas Principales**
+- `projects` - Proyectos
+- `tasks` - Tareas
+- `time_entries` - Entradas de tiempo
+- `users` - Usuarios (simplificado)
+
+### **Características**
+- **Row Level Security** para aislamiento de datos
+- **Índices optimizados** para consultas rápidas
+- **Relaciones bien definidas** entre tablas
+- **Triggers** para estadísticas automáticas
+
+## 🚀 Despliegue
+
+El proyecto está preparado para ser desplegado en cualquier plataforma que soporte Node.js y React. Las configuraciones específicas de deploy se pueden agregar según la plataforma elegida.
+
+## 🤝 Contribución
 
 1. Fork el proyecto
 2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
@@ -304,7 +224,7 @@ VITE_SUPABASE_ANON_KEY=tu_anon_key
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## 👨‍💻 Autor
 
@@ -312,7 +232,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 🙏 Agradecimientos
 
-- [Supabase](https://supabase.com) por la excelente plataforma de base de datos
-- [Vercel](https://vercel.com) por el hosting y despliegue
+- [Supabase](https://supabase.com) por la infraestructura de base de datos
 - [Tailwind CSS](https://tailwindcss.com) por el framework de CSS
-- [React](https://reactjs.org) por el framework de JavaScript
+- [React Query](https://tanstack.com/query) por la gestión de estado
+- [Vite](https://vitejs.dev) por el bundler rápido

@@ -1,59 +1,114 @@
-# 🚀 Inicio Rápido - Despliegue en Vercel
+# 🚀 Inicio Rápido - Gestor de Proyectos
 
 ## 📋 Resumen Ejecutivo
 
-Tu aplicación **Gestor de Proyectos** está lista para ser desplegada en Vercel. Este documento contiene las instrucciones esenciales para el despliegue.
+Tu aplicación **Gestor de Proyectos** está lista para desarrollo local. Este documento contiene las instrucciones esenciales para comenzar.
 
 ## ⚡ Pasos Rápidos
 
-### 1. Preparar el Repositorio
+### 1. Configurar el Entorno
 ```bash
 # Navegar al directorio del proyecto
-cd project-manager
+cd david-gestor
 
-# Ejecutar script de preparación (Windows)
-.\prepare-deployment.ps1
-
-# O manualmente:
-git add .
-git commit -m "Preparar para despliegue en Vercel"
-git push origin main
+# Instalar todas las dependencias
+npm run install:all
 ```
 
-### 2. Configurar Vercel
-1. Ve a [Vercel Dashboard](https://vercel.com/dashboard)
-2. Haz clic en **"New Project"**
-3. Importa el repositorio `Bazamus/gestor-proyectos`
-4. Configura las variables de entorno (ver abajo)
-5. Haz clic en **"Deploy"**
+### 2. Configurar Supabase
+1. Crear proyecto en [Supabase](https://supabase.com)
+2. Ejecutar el script de base de datos:
+   ```sql
+   -- Ejecutar database/schema.sql en el editor SQL de Supabase
+   -- Opcional: Ejecutar database/seed.sql para datos de ejemplo
+   ```
 
-### 3. Variables de Entorno Requeridas
+### 3. Configurar Variables de Entorno
+
+**Backend:**
+```bash
+cd server
+cp env.example .env
+# Editar .env con tus credenciales de Supabase
+```
+
+**Frontend:**
+```bash
+cd client
+cp env.example .env
+# Editar .env con tus credenciales de Supabase
+```
+
+### 4. Ejecutar en Desarrollo
+```bash
+# Ejecutar frontend y backend simultáneamente
+npm run dev
+```
+
+La aplicación estará disponible en:
+- **Frontend**: `http://localhost:3000`
+- **Backend**: `http://localhost:5000`
+
+## 🔧 Variables de Entorno Requeridas
+
+### Backend (.env)
 ```env
-# Supabase (Obligatorio)
+# Configuración del servidor
+NODE_ENV=development
+PORT=5000
+
+# Supabase Configuration
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_ANON_KEY=tu_anon_key_aqui
 SUPABASE_SERVICE_KEY=tu_service_key_aqui
 
-# Frontend (Obligatorio)
-VITE_API_URL=https://tu-app.vercel.app/api
-
-# Backend (Obligatorio)
+# JWT Configuration
 JWT_SECRET=tu_jwt_secret_super_seguro_aqui
-NODE_ENV=production
-FRONTEND_URL=https://tu-app.vercel.app
+
+# Rate Limiting (Development)
+DISABLE_RATE_LIMIT=true
+RATE_LIMIT_MAX_REQUESTS=50000
+RATE_LIMIT_WINDOW_MS=900000
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000
+
+# Logging
+LOG_LEVEL=debug
 ```
 
-## 🏗️ Arquitectura del Despliegue
+### Frontend (.env)
+```env
+# API Configuration
+VITE_API_URL=http://localhost:5000/api
+
+# Supabase Configuration (if needed for direct client access)
+VITE_SUPABASE_URL=your_supabase_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+
+# App Configuration
+VITE_APP_NAME=Gestor de Proyectos
+VITE_APP_VERSION=1.0.0
+
+# Feature Flags
+VITE_ENABLE_TIME_TRACKING=true
+VITE_ENABLE_NOTIFICATIONS=true
+VITE_ENABLE_EXPORT=true
+VITE_ENABLE_IMPORT=true
+```
+
+## 🏗️ Arquitectura del Proyecto
 
 ### Frontend (React + Vite)
 - **Build**: `client/dist/`
 - **Framework**: React 18 + TypeScript
 - **Styling**: Tailwind CSS
 - **Bundler**: Vite
+- **Estado**: React Query
 
 ### Backend (Node.js + Express)
-- **Runtime**: Vercel Serverless Functions
-- **Entry Point**: `api/index.ts`
+- **Runtime**: Node.js con TypeScript
+- **Entry Point**: `server/src/index.ts`
 - **Database**: Supabase (PostgreSQL)
 - **API Routes**: `/api/*`
 
@@ -62,15 +117,8 @@ FRONTEND_URL=https://tu-app.vercel.app
 - **Type**: PostgreSQL
 - **Features**: Row Level Security, Real-time
 
-## 🔧 Configuración Técnica
+## 🔧 Scripts Disponibles
 
-### Archivos de Configuración
-- `vercel.json` - Configuración de Vercel
-- `api/index.ts` - Servidor Express para serverless
-- `client/vite.config.ts` - Configuración de Vite
-- `server/package.json` - Dependencias del backend
-
-### Scripts Disponibles
 ```bash
 # Desarrollo
 npm run dev              # Frontend + Backend
@@ -78,123 +126,50 @@ npm run dev:client       # Solo frontend
 npm run dev:server       # Solo backend
 
 # Build
-npm run build           # Build completo
-npm run build:client    # Build frontend
-npm run build:server    # Build backend
+npm run build           # Build del frontend
+npm run build:server    # Build del backend
 
 # Linting
-npm run lint            # Lint completo
-npm run lint:fix        # Fix automático
+npm run lint            # Lint de todo el proyecto
+npm run lint:fix        # Lint y auto-fix
+
+# Utilidades
+npm run clean           # Limpiar node_modules y dist
+npm run setup           # Instalar dependencias y build
 ```
 
-## 🌐 URLs del Despliegue
+## 🚀 Próximos Pasos
 
-Una vez desplegado, tendrás acceso a:
+Una vez que la aplicación esté funcionando correctamente en local:
 
-- **Frontend**: `https://tu-app.vercel.app`
-- **API**: `https://tu-app.vercel.app/api`
-- **Health Check**: `https://tu-app.vercel.app/api/health`
-- **Documentación API**: `https://tu-app.vercel.app/api`
+1. **Probar todas las funcionalidades**
+2. **Verificar la comunicación entre frontend y backend**
+3. **Revisar la base de datos en Supabase**
+4. **Preparar para despliegue en producción**
 
-## 🔍 Verificación del Despliegue
+## 🆘 Solución de Problemas
 
-### 1. Health Check
-```bash
-curl https://tu-app.vercel.app/api/health
-```
-
-### 2. Frontend
-- Visita la URL principal
-- Verifica que la aplicación React cargue
-- Prueba la navegación
-
-### 3. Backend
-```bash
-# Probar API de proyectos
-curl https://tu-app.vercel.app/api/projects
-
-# Probar autenticación
-curl -X POST https://tu-app.vercel.app/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"test"}'
-```
-
-## 🐛 Solución de Problemas Comunes
-
-### Error de Build
-- Verificar variables de entorno
-- Revisar logs en Vercel Dashboard
-- Probar build local: `npm run build`
+### Error de Conexión a la Base de Datos
+- Verificar que las variables de entorno de Supabase estén correctas
+- Comprobar que el proyecto de Supabase esté activo
+- Verificar que el schema de la base de datos esté aplicado
 
 ### Error de CORS
-- Verificar `FRONTEND_URL` en variables de entorno
-- Agregar dominio a `allowedOrigins` en `api/index.ts`
+- Verificar que `CORS_ORIGIN` en el backend apunte al frontend
+- En desarrollo: `http://localhost:3000`
 
-### Error de Supabase
-- Verificar `SUPABASE_URL` y `SUPABASE_ANON_KEY`
-- Probar conexión desde Supabase Dashboard
+### Error de Build
+- Limpiar node_modules: `npm run clean`
+- Reinstalar dependencias: `npm run install:all`
 
-### Error de Rate Limiting
-- Aumentar `RATE_LIMIT_MAX_REQUESTS`
-- Verificar configuración en `api/index.ts`
+### Error de Puerto en Uso
+- El servidor automáticamente buscará un puerto disponible
+- Verificar que no haya otros procesos usando los puertos 3000 o 5000
 
-## 📊 Monitoreo
+## 📞 Soporte
 
-### Métricas Importantes
-- **Function Invocations**: Llamadas a la API
-- **Function Duration**: Tiempo de respuesta
-- **Bandwidth**: Uso de ancho de banda
-- **Build Time**: Tiempo de construcción
-
-### Logs
-- Ve a **"Functions"** en Vercel Dashboard
-- Revisa logs de funciones serverless
-- Monitorea errores y performance
-
-## 🔄 Despliegues Automáticos
-
-Vercel configurará automáticamente:
-- **Deploy on Push**: Despliegue automático al push a `main`
-- **Preview Deployments**: Para cada Pull Request
-- **Branch Deployments**: Para otras ramas
-
-## 💰 Costos
-
-### Plan Gratuito
-- 100GB bandwidth/mes
-- 100 serverless function executions/día
-- 100GB-hours de compute time
-- Dominios personalizados ilimitados
-
-### Plan Pro ($20/mes)
-- 1TB bandwidth/mes
-- 1000 serverless function executions/día
-- 1000GB-hours de compute time
-- Analytics avanzadas
-
-## 🎯 Próximos Pasos
-
-1. **Configurar dominio personalizado** (opcional)
-2. **Implementar monitoreo y alertas**
-3. **Configurar CI/CD avanzado**
-4. **Optimizar performance**
-5. **Implementar backup automático**
-
-## 📚 Documentación Completa
-
-Para instrucciones detalladas, consulta:
-- `DEPLOYMENT.md` - Guía completa de despliegue
-- `README.md` - Documentación del proyecto
-- `docus/` - Documentación técnica
-
-## 🆘 Soporte
-
-Si tienes problemas:
-1. Revisa los logs en Vercel Dashboard
-2. Consulta la [documentación de Vercel](https://vercel.com/docs)
-3. Abre un issue en el repositorio de GitHub
-4. Contacta al equipo de Vercel
-
----
-
-**¡Tu aplicación está lista para producción! 🚀**
+Si encuentras problemas:
+1. Revisar los logs del servidor en la consola
+2. Verificar las variables de entorno
+3. Comprobar la conexión a Supabase
+4. Revisar la documentación en `docus/`

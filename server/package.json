@@ -5,12 +5,6 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "dev:optimized": "node start-simple.js",
-    "dev:no-limit": "DISABLE_RATE_LIMIT=true nodemon src/index.ts",
-    "dev:simple": "set NODE_ENV=development && set DISABLE_RATE_LIMIT=true && nodemon src/index.ts",
-    "start-dev": "node start-dev.js",
-    "monitor": "node monitor-requests.js",
-    "dev:monitor": "concurrently \"npm run start-dev\" \"npm run monitor\"",
     "build": "npx --package=typescript tsc",
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",
