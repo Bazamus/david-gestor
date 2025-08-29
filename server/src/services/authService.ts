@@ -31,6 +31,17 @@ export class AuthService {
     try {
       const { username, password } = credentials;
 
+      console.log('🔍 Intentando login para usuario:', username);
+
+      // Verificar que las variables de entorno estén configuradas
+      if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+        console.error('❌ Variables de entorno de Supabase no configuradas');
+        return {
+          success: false,
+          message: 'Error de configuración del servidor'
+        };
+      }
+
       // Buscar usuario en la base de datos
       const { data: users, error } = await supabaseService.getClient()
         .from('users')
@@ -38,22 +49,51 @@ export class AuthService {
         .eq('username', username)
         .single();
 
-      if (error || !users) {
+      if (error) {
+        console.error('❌ Error al buscar usuario:', error);
+        
+        if (error.code === '42P01') {
+          return {
+            success: false,
+            message: 'Tabla de usuarios no existe. Contacta al administrador.'
+          };
+        }
+        
+        if (error.code === 'PGRST116') {
+          return {
+            success: false,
+            message: 'Usuario no encontrado'
+          };
+        }
+        
+        return {
+          success: false,
+          message: 'Error al buscar usuario en la base de datos'
+        };
+      }
+
+      if (!users) {
+        console.log('❌ Usuario no encontrado:', username);
         return {
           success: false,
           message: 'Usuario no encontrado'
         };
       }
 
+      console.log('✅ Usuario encontrado:', users.username);
+
       // Verificar contraseña
       const isValidPassword = await bcrypt.compare(password, users.password_hash);
       
       if (!isValidPassword) {
+        console.log('❌ Contraseña incorrecta para usuario:', username);
         return {
           success: false,
           message: 'Contraseña incorrecta'
         };
       }
+
+      console.log('✅ Contraseña válida para usuario:', username);
 
       // Crear token JWT
       const user: User = {
@@ -73,13 +113,15 @@ export class AuthService {
         { expiresIn: '24h' }
       );
 
+      console.log('✅ Token JWT generado para usuario:', username);
+
       return {
         success: true,
         user,
         token
       };
     } catch (error) {
-      console.error('Error en login:', error);
+      console.error('❌ Error en login:', error);
       return {
         success: false,
         message: 'Error interno del servidor'
@@ -118,9 +160,10 @@ export class AuthService {
         }
       };
     } catch (error) {
+      console.error('Error en verifyToken:', error);
       return {
         success: false,
-        message: 'Token inválido o expirado'
+        message: 'Token inválido'
       };
     }
   }
