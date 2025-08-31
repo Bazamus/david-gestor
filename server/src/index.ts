@@ -88,7 +88,16 @@ app.use(requestLogger);
 // RUTAS
 // ======================================
 
-// Ruta de health check
+// Ruta principal y de health check
+app.get('/', (req, res) => {
+  res.json({
+    message: '🚀 API del Gestor de Proyectos funcionando correctamente',
+    version: '1.0.0',
+    documentation: '/api/docs',
+    health: '/health',
+  });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -108,21 +117,11 @@ app.use('/api/search', searchRoutes);
 app.use('/api/reportes', reporteRoutes);
 app.use('/api/time-entries', timeEntriesRoutes);
 
-// Ruta 404 para API
+// Middleware para manejar 404 en rutas de API
 app.use('/api/*', (req, res) => {
   res.status(404).json({
     error: 'Endpoint no encontrado',
     message: `La ruta ${req.originalUrl} no existe`,
-  });
-});
-
-// Ruta principal para verificar que el servidor está funcionando
-app.get('/', (req, res) => {
-  res.json({
-    message: '🚀 API del Gestor de Proyectos funcionando correctamente',
-    version: '1.0.0',
-    documentation: '/api/docs',
-    health: '/health',
   });
 });
 
