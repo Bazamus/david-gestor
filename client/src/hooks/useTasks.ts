@@ -154,13 +154,23 @@ export const useCreateTask = (options?: UseMutationOptions<Task, CreateTaskForm>
   return useMutation({
     mutationFn: (taskData: CreateTaskForm) => taskService.createTask(taskData),
     onSuccess: (newTask) => {
-      // Invalidar queries relacionadas
+      // Invalidar TODAS las queries relacionadas con tareas
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.project(newTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.kanban(newTask.project_id) });
       
-      // Actualizar cache de proyectos
+      // Invalidar queries de proyectos para actualizar estadísticas
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', newTask.project_id] });
+      queryClient.invalidateQueries({ queryKey: ['project-stats', newTask.project_id] });
+      
+      // Invalidar queries de dashboard
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch inmediato de las queries más importantes
+      queryClient.refetchQueries({ queryKey: taskKeys.project(newTask.project_id) });
+      queryClient.refetchQueries({ queryKey: ['project', newTask.project_id] });
       
       addNotification({
         type: 'success',

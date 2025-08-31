@@ -20,8 +20,8 @@ moment.locale('es');
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000, // 10 minutos
-      gcTime: 15 * 60 * 1000, // 15 minutos
+      staleTime: 2 * 60 * 1000, // 2 minutos (reducido para mejor refresco)
+      gcTime: 10 * 60 * 1000, // 10 minutos
       retry: (failureCount, error) => {
         // No reintentar errores 4xx
         if (error instanceof Error) {
@@ -32,8 +32,8 @@ const queryClient = new QueryClient({
         }
         return failureCount < 3;
       },
-      refetchOnWindowFocus: false,
-      refetchOnMount: false, // Cambiado a false para evitar refetch automático
+      refetchOnWindowFocus: true, // Habilitado para refrescar al volver a la ventana
+      refetchOnMount: true, // Habilitado para refrescar al montar componentes
       refetchOnReconnect: true,
     },
     mutations: {
