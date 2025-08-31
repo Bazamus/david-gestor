@@ -419,6 +419,17 @@ const ProjectDetail: React.FC = () => {
                         <span className="text-gray-500 dark:text-gray-400">No especificado</span>
                       )}
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Documentos:</span>
+                      {project.url_documentos ? (
+                        <a href={project.url_documentos} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center">
+                          <GlobeIcon className="w-4 h-4 mr-1" />
+                          Ver
+                        </a>
+                      ) : (
+                        <span className="text-gray-500 dark:text-gray-400">No especificado</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

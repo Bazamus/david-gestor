@@ -59,6 +59,7 @@ export interface Project {
   repositorio_url?: string;
   url_staging?: string;
   url_produccion?: string;
+  url_documentos?: string;
   // Gestión y Presupuesto
   presupuesto_estimado?: number;
   moneda?: string;
@@ -293,6 +294,7 @@ export interface CreateProjectForm {
   repositorio_url?: string;
   url_staging?: string;
   url_produccion?: string;
+  url_documentos?: string;
   
   // Gestión y Presupuesto
   presupuesto_estimado?: number;

@@ -67,6 +67,7 @@ const CreateProject: React.FC = () => {
       repositorio_url: '',
       url_staging: '',
       url_produccion: '',
+      url_documentos: '',
       
       // Gestión y Presupuesto
       presupuesto_estimado: undefined,
@@ -356,6 +357,16 @@ const CreateProject: React.FC = () => {
                   {...register('url_produccion')}
                   error={errors.url_produccion?.message}
                   placeholder="https://proyecto.com"
+                />
+              </div>
+              
+              <div className="md:col-span-2">
+                <Input
+                  label="URL Documentos"
+                  type="url"
+                  {...register('url_documentos')}
+                  error={errors.url_documentos?.message}
+                  placeholder="https://docs.proyecto.com"
                 />
               </div>
             </div>

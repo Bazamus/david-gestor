@@ -125,6 +125,7 @@ export const createProject = asyncHandler(async (req: Request, res: Response, ne
       repositorio_url: projectData.repositorio_url?.trim() || undefined,
       url_staging: projectData.url_staging?.trim() || undefined,
       url_produccion: projectData.url_produccion?.trim() || undefined,
+      url_documentos: projectData.url_documentos?.trim() || undefined,
       
       // Gestión y Presupuesto
       presupuesto_estimado: projectData.presupuesto_estimado || undefined,
@@ -227,6 +228,7 @@ export const updateProject = asyncHandler(async (req: Request, res: Response, ne
     if (updateData.repositorio_url !== undefined) cleanUpdateData.repositorio_url = updateData.repositorio_url?.trim() || null;
     if (updateData.url_staging !== undefined) cleanUpdateData.url_staging = updateData.url_staging?.trim() || null;
     if (updateData.url_produccion !== undefined) cleanUpdateData.url_produccion = updateData.url_produccion?.trim() || null;
+    if (updateData.url_documentos !== undefined) cleanUpdateData.url_documentos = updateData.url_documentos?.trim() || null;
     
     // Gestión y Presupuesto
     if (updateData.presupuesto_estimado !== undefined) cleanUpdateData.presupuesto_estimado = updateData.presupuesto_estimado;

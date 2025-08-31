@@ -53,6 +53,7 @@ const projectSchema = z.object({
   repositorio_url: z.string().url('URL inválida').optional().or(z.literal('')),
   url_staging: z.string().url('URL inválida').optional().or(z.literal('')),
   url_produccion: z.string().url('URL inválida').optional().or(z.literal('')),
+  url_documentos: z.string().url('URL inválida').optional().or(z.literal('')),
   // Gestión y Presupuesto
   presupuesto_estimado: z.number().min(0, 'El presupuesto debe ser positivo').optional(),
   moneda: z.enum(['EUR', 'USD', 'MXN', 'COP', 'ARS']).optional(),
@@ -154,6 +155,7 @@ const EditProject: React.FC = () => {
         repositorio_url: project.repositorio_url || '',
         url_staging: project.url_staging || '',
         url_produccion: project.url_produccion || '',
+        url_documentos: project.url_documentos || '',
         // Gestión y Presupuesto
         presupuesto_estimado: project.presupuesto_estimado || undefined,
         moneda: project.moneda || 'EUR',
@@ -296,6 +298,7 @@ const EditProject: React.FC = () => {
       repositorio_url: data.repositorio_url || undefined,
       url_staging: data.url_staging || undefined,
       url_produccion: data.url_produccion || undefined,
+      url_documentos: data.url_documentos || undefined,
       // Gestión y Presupuesto
       presupuesto_estimado: data.presupuesto_estimado || undefined,
       moneda: data.moneda || undefined,
@@ -553,6 +556,15 @@ const EditProject: React.FC = () => {
                 error={errors.url_produccion?.message}
                 placeholder="https://miproyecto.com"
                 key={`url_produccion-${project.id}`}
+              />
+              
+              <Input
+                label="URL de Documentos"
+                type="url"
+                {...register('url_documentos')}
+                error={errors.url_documentos?.message}
+                placeholder="https://docs.miproyecto.com"
+                key={`url_documentos-${project.id}`}
               />
             </div>
           </Accordion>
