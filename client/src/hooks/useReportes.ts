@@ -77,7 +77,8 @@ export const useProductividadPorDia = () => {
     queryKey: ['productividad-por-dia'],
     queryFn: async () => {
       // Obtener datos de la página de Tiempos
-      const response = await fetch('/api/time-entries');
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE_URL}/time-entries`);
       const timeEntries = await response.json();
       
       // Agrupar por día de la semana
