@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { supabaseService } from './supabaseService';
 
@@ -83,7 +83,9 @@ export class AuthService {
       console.log('✅ Usuario encontrado:', users.username);
 
       // Verificar contraseña
+      console.log('  [AuthService] Iniciando comparación de contraseña...');
       const isValidPassword = await bcrypt.compare(password, users.password_hash);
+      console.log('  [AuthService] Comparación de contraseña finalizada. Es válida:', isValidPassword);
       
       if (!isValidPassword) {
         console.log('❌ Contraseña incorrecta para usuario:', username);

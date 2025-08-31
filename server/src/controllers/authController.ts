@@ -7,6 +7,7 @@ export class AuthController {
    * Autenticar usuario
    */
   static async login(req: Request, res: Response) {
+    console.log('[AuthController] Iniciando proceso de login...');
     try {
       const { username, password }: LoginCredentials = req.body;
 
@@ -19,7 +20,9 @@ export class AuthController {
       }
 
       // Intentar autenticar
+      console.log('[AuthController] Llamando a AuthService.login...');
       const authResponse = await AuthService.login({ username, password });
+      console.log('[AuthController] Respuesta recibida de AuthService:', JSON.stringify(authResponse));
 
       if (!authResponse.success) {
         return res.status(401).json({

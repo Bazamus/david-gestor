@@ -27,7 +27,7 @@ const app = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
 
 // Verificar variables de entorno requeridas
-const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'JWT_SECRET', 'FRONTEND_URL'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
@@ -35,12 +35,6 @@ if (missingEnvVars.length > 0) {
   console.error('💡 Asegúrate de configurar el archivo .env correctamente');
   process.exit(1);
 }
-
-// Inicializar cliente de Supabase
-export const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY!
-);
 
 // ======================================
 // MIDDLEWARE GLOBAL
