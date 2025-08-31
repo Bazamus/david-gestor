@@ -40,46 +40,57 @@ if (missingEnvVars.length > 0) {
 // MIDDLEWARE GLOBAL
 // ======================================
 
-// Seguridad básica
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-}));
+// Seguridad básica - DESHABILITADA TEMPORALMENTE PARA DESARROLLO
+// app.use(helmet({
+//   contentSecurityPolicy: {
+//     directives: {
+//       defaultSrc: ["'self'"],
+//       styleSrc: ["'self'", "'unsafe-inline'"],
+//       scriptSrc: ["'self'"],
+//       imgSrc: ["'self'", "data:", "https:"],
+//     },
+//   },
+// }));
 
-// CORS configurado
+// CORS configurado - PERMITIENDO TODOS LOS ORÍGENES PARA DESARROLLO
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
   'http://localhost:3003',
+  'https://david-gestor.netlify.app',
+  'https://*.netlify.app',
+  'https://netlify.app',
 ];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Permitir solicitudes sin origen (como Postman o apps móviles) y orígenes en la lista blanca
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('No permitido por la política de CORS'));
-    }
-  },
+  origin: true, // PERMITIR TODOS LOS ORÍGENES TEMPORALMENTE
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 // Parsing de JSON y URL-encoded
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
-app.use(rateLimiter);
+// Middleware adicional para CORS preflight
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
+// Rate limiting - DESHABILITADO TEMPORALMENTE
+// app.use(rateLimiter);
 
 // Logging de requests
 app.use(requestLogger);
