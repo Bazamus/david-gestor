@@ -13,6 +13,9 @@ import './styles/responsive.scss';
 // Importar componente principal
 import App from './App';
 
+// Importar PWA Provider
+import { PWAProvider } from './pwa';
+
 // Configurar moment para español globalmente
 moment.locale('es');
 
@@ -44,11 +47,13 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-    </QueryClientProvider>
+    <PWAProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      </QueryClientProvider>
+    </PWAProvider>
   </React.StrictMode>
 );
