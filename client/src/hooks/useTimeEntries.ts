@@ -63,14 +63,6 @@ export const useCreateTimeEntry = () => {
         queryClient.invalidateQueries({ queryKey: ['task', variables.task_id] });
       }
       
-      // Invalidación específica si se conoce el proyecto
-      if (variables?.project_id) {
-        queryClient.invalidateQueries({ queryKey: ['time-entries-by-project', variables.project_id] });
-        queryClient.invalidateQueries({ queryKey: ['project-time-summary', variables.project_id] });
-        queryClient.invalidateQueries({ queryKey: ['project', variables.project_id] });
-        queryClient.invalidateQueries({ queryKey: ['project-stats', variables.project_id] });
-      }
-      
       // Forzar refetch inmediato de las queries más importantes
       queryClient.refetchQueries({ queryKey: ['time-entries'] });
       queryClient.refetchQueries({ queryKey: ['time-summary'] });
@@ -79,11 +71,6 @@ export const useCreateTimeEntry = () => {
       if (variables?.task_id) {
         queryClient.refetchQueries({ queryKey: ['time-entries-by-task', variables.task_id] });
         queryClient.refetchQueries({ queryKey: ['task-time-summary', variables.task_id] });
-      }
-      
-      if (variables?.project_id) {
-        queryClient.refetchQueries({ queryKey: ['time-entries-by-project', variables.project_id] });
-        queryClient.refetchQueries({ queryKey: ['project-time-summary', variables.project_id] });
       }
     },
   });
@@ -122,14 +109,6 @@ export const useUpdateTimeEntry = () => {
         queryClient.invalidateQueries({ queryKey: ['task', data.task_id] });
       }
       
-      // Invalidación específica si se conoce el proyecto
-      if (data?.project_id) {
-        queryClient.invalidateQueries({ queryKey: ['time-entries-by-project', data.project_id] });
-        queryClient.invalidateQueries({ queryKey: ['project-time-summary', data.project_id] });
-        queryClient.invalidateQueries({ queryKey: ['project', data.project_id] });
-        queryClient.invalidateQueries({ queryKey: ['project-stats', data.project_id] });
-      }
-      
       // Forzar refetch inmediato
       queryClient.refetchQueries({ queryKey: ['time-entries'] });
       queryClient.refetchQueries({ queryKey: ['time-summary'] });
@@ -138,11 +117,6 @@ export const useUpdateTimeEntry = () => {
       if (data?.task_id) {
         queryClient.refetchQueries({ queryKey: ['time-entries-by-task', data.task_id] });
         queryClient.refetchQueries({ queryKey: ['task-time-summary', data.task_id] });
-      }
-      
-      if (data?.project_id) {
-        queryClient.refetchQueries({ queryKey: ['time-entries-by-project', data.project_id] });
-        queryClient.refetchQueries({ queryKey: ['project-time-summary', data.project_id] });
       }
     },
   });
