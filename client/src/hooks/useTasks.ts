@@ -35,7 +35,8 @@ export const useTasks = (filters?: TaskFilters, options?: UseApiOptions) => {
   return useQuery({
     queryKey: taskKeys.list(filters),
     queryFn: () => taskService.getTasks(filters),
-    staleTime: 2 * 60 * 1000, // 2 minutos
+    staleTime: 1 * 60 * 1000, // 1 minuto para datos más frescos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -48,7 +49,8 @@ export const useTask = (id: string, options?: UseApiOptions) => {
     queryKey: taskKeys.detail(id),
     queryFn: () => taskService.getTaskById(id),
     enabled: !!id,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 1 * 60 * 1000, // 1 minuto para datos más frescos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -61,7 +63,8 @@ export const useProjectTasks = (projectId: string, options?: UseApiOptions) => {
     queryKey: taskKeys.project(projectId),
     queryFn: () => taskService.getProjectTasks(projectId),
     enabled: !!projectId,
-    staleTime: 1 * 60 * 1000, // 1 minuto
+    staleTime: 30 * 1000, // 30 segundos para datos muy frescos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -74,7 +77,8 @@ export const useKanbanTasks = (projectId: string, options?: UseApiOptions) => {
     queryKey: taskKeys.kanban(projectId),
     queryFn: () => taskService.getKanbanTasks(projectId),
     enabled: !!projectId,
-    staleTime: 1 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 segundos para Kanban en tiempo real
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -86,7 +90,8 @@ export const useOverdueTasks = (options?: UseApiOptions) => {
   return useQuery({
     queryKey: taskKeys.overdue(),
     queryFn: () => taskService.getOverdueTasks(),
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -98,7 +103,8 @@ export const useUpcomingTasks = (days: number = 7, options?: UseApiOptions) => {
   return useQuery({
     queryKey: taskKeys.upcoming(),
     queryFn: () => taskService.getUpcomingTasks(days),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -110,7 +116,8 @@ export const useTasksByPriority = (priorities: TaskPriority[], options?: UseApiO
   return useQuery({
     queryKey: [...taskKeys.all, 'priority', priorities],
     queryFn: () => taskService.getTasksByPriority(priorities),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 1 * 60 * 1000, // 1 minuto
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -122,7 +129,8 @@ export const useTasksByTags = (tags: string[], options?: UseApiOptions) => {
   return useQuery({
     queryKey: [...taskKeys.all, 'tags', tags],
     queryFn: () => taskService.getTasksByTags(tags),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 1 * 60 * 1000, // 1 minuto
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -135,7 +143,8 @@ export const useSearchTasks = (query: string, projectId?: string, options?: UseA
     queryKey: [...taskKeys.all, 'search', query, projectId],
     queryFn: () => taskService.searchTasks(query, projectId),
     enabled: !!query && query.length > 2,
-    staleTime: 1 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 segundos para búsquedas
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -159,6 +168,8 @@ export const useCreateTask = (options?: UseMutationOptions<Task, CreateTaskForm>
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.project(newTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.kanban(newTask.project_id) });
+      queryClient.invalidateQueries({ queryKey: taskKeys.overdue() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.upcoming() });
       
       // Invalidar queries de proyectos para actualizar estadísticas
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -170,7 +181,9 @@ export const useCreateTask = (options?: UseMutationOptions<Task, CreateTaskForm>
       
       // Forzar refetch inmediato de las queries más importantes
       queryClient.refetchQueries({ queryKey: taskKeys.project(newTask.project_id) });
+      queryClient.refetchQueries({ queryKey: taskKeys.kanban(newTask.project_id) });
       queryClient.refetchQueries({ queryKey: ['project', newTask.project_id] });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       addNotification({
         type: 'success',
@@ -200,13 +213,30 @@ export const useUpdateTask = (options?: UseMutationOptions<Task, { id: string; d
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskForm }) => 
       taskService.updateTask(id, data),
     onSuccess: (updatedTask) => {
-      // Actualizar cache de la tarea específica
+      // Actualizar cache de la tarea específica de forma optimista
       queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
       
-      // Invalidar queries relacionadas
+      // Invalidar TODAS las queries relacionadas con tareas
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.project(updatedTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.kanban(updatedTask.project_id) });
+      queryClient.invalidateQueries({ queryKey: taskKeys.overdue() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.upcoming() });
+      
+      // Invalidar queries de proyectos
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', updatedTask.project_id] });
+      queryClient.invalidateQueries({ queryKey: ['project-stats', updatedTask.project_id] });
+      
+      // Invalidar dashboard
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: taskKeys.project(updatedTask.project_id) });
+      queryClient.refetchQueries({ queryKey: taskKeys.kanban(updatedTask.project_id) });
+      queryClient.refetchQueries({ queryKey: ['project', updatedTask.project_id] });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       addNotification({
         type: 'success',
@@ -246,10 +276,25 @@ export const useUpdateTaskPosition = (options?: UseMutationOptions<Task, {
       status: newStatus 
     }),
     onSuccess: (updatedTask) => {
-      // Invalidar queries de Kanban y proyecto
+      // Invalidar queries de Kanban y proyecto inmediatamente
       queryClient.invalidateQueries({ queryKey: taskKeys.kanban(updatedTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.project(updatedTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.overdue() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.upcoming() });
+      
+      // Invalidar queries de proyectos
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', updatedTask.project_id] });
+      queryClient.invalidateQueries({ queryKey: ['project-stats', updatedTask.project_id] });
+      
+      // Invalidar dashboard
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch inmediato para Kanban
+      queryClient.refetchQueries({ queryKey: taskKeys.kanban(updatedTask.project_id) });
+      queryClient.refetchQueries({ queryKey: taskKeys.project(updatedTask.project_id) });
+      queryClient.refetchQueries({ queryKey: ['project', updatedTask.project_id] });
       
       // No mostrar notificación para movimientos de Kanban
     },
@@ -274,10 +319,27 @@ export const useCompleteTask = (options?: UseMutationOptions<Task, string>) => {
   return useMutation({
     mutationFn: (taskId: string) => taskService.completeTask(taskId),
     onSuccess: (completedTask) => {
-      // Invalidar queries relacionadas
+      // Invalidar TODAS las queries relacionadas
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.project(completedTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.kanban(completedTask.project_id) });
+      queryClient.invalidateQueries({ queryKey: taskKeys.overdue() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.upcoming() });
+      
+      // Invalidar queries de proyectos
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', completedTask.project_id] });
+      queryClient.invalidateQueries({ queryKey: ['project-stats', completedTask.project_id] });
+      
+      // Invalidar dashboard
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: taskKeys.project(completedTask.project_id) });
+      queryClient.refetchQueries({ queryKey: taskKeys.kanban(completedTask.project_id) });
+      queryClient.refetchQueries({ queryKey: ['project', completedTask.project_id] });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       addNotification({
         type: 'success',
@@ -306,10 +368,27 @@ export const useReopenTask = (options?: UseMutationOptions<Task, string>) => {
   return useMutation({
     mutationFn: (taskId: string) => taskService.reopenTask(taskId),
     onSuccess: (reopenedTask) => {
-      // Invalidar queries relacionadas
+      // Invalidar TODAS las queries relacionadas
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.project(reopenedTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.kanban(reopenedTask.project_id) });
+      queryClient.invalidateQueries({ queryKey: taskKeys.overdue() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.upcoming() });
+      
+      // Invalidar queries de proyectos
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', reopenedTask.project_id] });
+      queryClient.invalidateQueries({ queryKey: ['project-stats', reopenedTask.project_id] });
+      
+      // Invalidar dashboard
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: taskKeys.project(reopenedTask.project_id) });
+      queryClient.refetchQueries({ queryKey: taskKeys.kanban(reopenedTask.project_id) });
+      queryClient.refetchQueries({ queryKey: ['project', reopenedTask.project_id] });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       addNotification({
         type: 'success',
@@ -341,8 +420,21 @@ export const useDeleteTask = (options?: UseMutationOptions<void, string>) => {
       // Remover del cache
       queryClient.removeQueries({ queryKey: taskKeys.detail(taskId) });
       
-      // Invalidar queries relacionadas
+      // Invalidar TODAS las queries relacionadas
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.overdue() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.upcoming() });
+      
+      // Invalidar queries de proyectos
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      
+      // Invalidar dashboard
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch
+      queryClient.refetchQueries({ queryKey: taskKeys.lists() });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       addNotification({
         type: 'success',
@@ -387,6 +479,7 @@ export const useUniqueTags = (projectId?: string, options?: UseApiOptions) => {
     queryKey: [...taskKeys.all, 'tags', 'unique', projectId],
     queryFn: () => taskService.getUniqueTags(projectId),
     staleTime: 10 * 60 * 1000, // 10 minutos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };

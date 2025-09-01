@@ -24,8 +24,9 @@ export const useDashboardStats = (options?: UseApiOptions) => {
   return useQuery({
     queryKey: dashboardKeys.stats(),
     queryFn: () => dashboardService.getDashboardStats(),
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    refetchInterval: 15 * 60 * 1000, // Refetch cada 15 minutos
+    staleTime: 2 * 60 * 1000, // 2 minutos (reducido para datos más frescos)
+    refetchInterval: 5 * 60 * 1000, // Refetch cada 5 minutos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -37,8 +38,9 @@ export const useQuickSummary = (options?: UseApiOptions) => {
   return useQuery({
     queryKey: dashboardKeys.summary(),
     queryFn: () => dashboardService.getQuickSummary(),
-    staleTime: 3 * 60 * 1000, // 3 minutos
-    refetchInterval: 10 * 60 * 1000, // Refetch cada 10 minutos
+    staleTime: 1 * 60 * 1000, // 1 minuto para datos muy frescos
+    refetchInterval: 3 * 60 * 1000, // Refetch cada 3 minutos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -50,7 +52,8 @@ export const useProjectsProgress = (options?: UseApiOptions) => {
   return useQuery({
     queryKey: dashboardKeys.projectsProgress(),
     queryFn: () => dashboardService.getProjectsProgress(),
-    staleTime: 3 * 60 * 1000, // 3 minutos
+    staleTime: 1 * 60 * 1000, // 1 minuto para datos más frescos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -62,7 +65,9 @@ export const useRecentActivity = (limit: number = 20, options?: UseApiOptions) =
   return useQuery({
     queryKey: dashboardKeys.recentActivity(limit),
     queryFn: () => dashboardService.getRecentActivity(limit),
-    staleTime: 1 * 60 * 1000, // 1 minuto
+    staleTime: 30 * 1000, // 30 segundos para actividad en tiempo real
+    refetchInterval: 2 * 60 * 1000, // Refetch cada 2 minutos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -74,7 +79,9 @@ export const useTimeMetrics = (options?: UseApiOptions) => {
   return useQuery({
     queryKey: dashboardKeys.timeMetrics(),
     queryFn: () => dashboardService.getTimeMetrics(),
-    staleTime: 10 * 60 * 1000, // 10 minutos
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchInterval: 10 * 60 * 1000, // Refetch cada 10 minutos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };

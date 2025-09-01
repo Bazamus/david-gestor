@@ -32,7 +32,8 @@ export const useProjects = (filters?: ProjectFilters, options?: UseApiOptions) =
   return useQuery({
     queryKey: projectKeys.list(filters),
     queryFn: () => projectService.getProjects(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    refetchOnWindowFocus: true, // Refetch al volver a la ventana
     ...options,
   });
 };
@@ -45,7 +46,8 @@ export const useProject = (id: string, options?: UseApiOptions) => {
     queryKey: projectKeys.detail(id),
     queryFn: () => projectService.getProjectById(id),
     enabled: !!id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000, // 1 minuto para datos más frescos
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -58,7 +60,8 @@ export const useProjectStats = (id: string, options?: UseApiOptions) => {
     queryKey: projectKeys.stats(id),
     queryFn: () => projectService.getProjectStats(id),
     enabled: !!id,
-    staleTime: 2 * 60 * 1000, // 2 minutos
+    staleTime: 1 * 60 * 1000, // 1 minuto para estadísticas actualizadas
+    refetchOnWindowFocus: true,
     ...options,
   });
 };
@@ -117,8 +120,16 @@ export const useCreateProject = (options?: UseMutationOptions<ProjectWithStats, 
       };
     },
     onSuccess: (data, variables) => {
-      // Invalidar caché de proyectos
+      // Invalidar TODAS las queries relacionadas con proyectos
+      queryClient.invalidateQueries({ queryKey: projectKeys.all });
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      
+      // Invalidar queries de dashboard
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch inmediato de las queries más importantes
+      queryClient.refetchQueries({ queryKey: projectKeys.lists() });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       // Mostrar notificación de éxito
       addNotification({
@@ -159,14 +170,22 @@ export const useUpdateProject = (options?: UseMutationOptions<Project, { id: str
       console.log('useUpdateProject: Success response:', data);
       console.log('useUpdateProject: Variables:', variables);
       
-      // Invalidar todas las consultas relacionadas con proyectos
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['project', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['project-stats', variables.id] });
+      // Invalidar TODAS las queries relacionadas con proyectos
+      queryClient.invalidateQueries({ queryKey: projectKeys.all });
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: projectKeys.stats(variables.id) });
+      
+      // Invalidar queries de dashboard
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       
-      // También actualizar el caché específico
-      queryClient.setQueryData(['project', variables.id], data);
+      // Actualizar el caché específico de forma optimista
+      queryClient.setQueryData(projectKeys.detail(variables.id), data);
+      
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ queryKey: projectKeys.detail(variables.id) });
+      queryClient.refetchQueries({ queryKey: projectKeys.stats(variables.id) });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       addNotification({
         type: 'success',
@@ -207,7 +226,15 @@ export const useDeleteProject = (options?: UseMutationOptions<void, string>) => 
       queryClient.removeQueries({ queryKey: projectKeys.stats(projectId) });
       
       // Invalidar listas
+      queryClient.invalidateQueries({ queryKey: projectKeys.all });
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      
+      // Invalidar dashboard
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch
+      queryClient.refetchQueries({ queryKey: projectKeys.lists() });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       addNotification({
         type: 'success',
@@ -254,7 +281,13 @@ export const useArchiveProject = (options?: UseMutationOptions<ProjectWithStats,
     onSuccess: (data, projectId) => {
       // Actualizar caché
       queryClient.setQueryData(projectKeys.detail(projectId), data);
+      queryClient.invalidateQueries({ queryKey: projectKeys.all });
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      
+      // Forzar refetch
+      queryClient.refetchQueries({ queryKey: projectKeys.lists() });
+      queryClient.refetchQueries({ queryKey: ['dashboard'] });
       
       addNotification({
         type: 'success',
