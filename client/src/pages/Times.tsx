@@ -43,8 +43,6 @@ const Times: React.FC = () => {
   const { data: projects } = useProjects();
   const { data: tasks } = useTasks({});
 
-
-
   // Mutations
   const createTimeEntry = useCreateTimeEntry();
   const updateTimeEntry = useUpdateTimeEntry();

@@ -19,8 +19,6 @@ const CreateTask: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-
-  
   // Estado para el modal de confirmación
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationData, setConfirmationData] = useState<{

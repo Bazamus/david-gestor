@@ -67,7 +67,6 @@ export const ExpandedTaskForm: React.FC<ExpandedTaskFormProps> = ({
     }
   );
 
-
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basic: true,
     management: false,
@@ -175,11 +174,6 @@ export const ExpandedTaskForm: React.FC<ExpandedTaskFormProps> = ({
     label: project.name
   }));
 
-
-
-
-
-
   // Funciones de utilidad
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -248,8 +242,6 @@ export const ExpandedTaskForm: React.FC<ExpandedTaskFormProps> = ({
         criterios_aceptacion: data.criterios_aceptacion || [],
         archivos_adjuntos: data.archivos_adjuntos || [],
       };
-
-
 
       const formData = cleanEmptyFields(processedData);
 
@@ -322,8 +314,6 @@ export const ExpandedTaskForm: React.FC<ExpandedTaskFormProps> = ({
       {/* SECCIÓN BÁSICA - Siempre visible */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
         <div className="p-6 space-y-4">
-
-          
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <CheckSquare size={20} />
             Información Básica
@@ -373,7 +363,7 @@ export const ExpandedTaskForm: React.FC<ExpandedTaskFormProps> = ({
                     </label>
                     <div className="px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg bg-red-50 dark:bg-red-900/20">
                       <span className="text-sm text-red-600 dark:text-red-400">
-                        Error al cargar proyectos: {projectsError.message}
+                        Error al cargar proyectos: {projectsError?.message || 'Error desconocido'}
                       </span>
                     </div>
                   </div>
