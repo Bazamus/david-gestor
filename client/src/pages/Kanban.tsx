@@ -411,7 +411,7 @@ const SortableTaskCard: React.FC<SortableTaskCardProps> = ({ task, onClick, isGl
         task={task}
         onViewClick={onClick}
         showViewButton={true}
-        className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow pointer-events-none"
+        className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
       />
       
       {/* Indicador de proyecto en modo global */}

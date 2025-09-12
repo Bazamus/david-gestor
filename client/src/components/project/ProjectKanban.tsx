@@ -351,6 +351,7 @@ interface SortableTaskCardProps {
 }
 
 const SortableTaskCard: React.FC<SortableTaskCardProps> = ({ task, onClick }) => {
+  const navigate = useNavigate();
   const {
     attributes,
     listeners,
@@ -365,17 +366,31 @@ const SortableTaskCard: React.FC<SortableTaskCardProps> = ({ task, onClick }) =>
     transition,
   };
 
+  const handleViewClick = () => {
+    navigate(`/tasks/${task.id}`);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`${isDragging ? 'opacity-50' : 'opacity-100'}`}
+      className={`group relative ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
+      {/* Área de drag & drop - excluye el área del botón */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute inset-0 pointer-events-auto"
+        style={{ 
+          clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 70px), calc(100% - 120px) calc(100% - 70px), calc(100% - 120px) 100%, 0 100%)'
+        }}
+      />
+      
       <TaskCard
         task={task}
         onClick={onClick}
+        onViewClick={handleViewClick}
+        showViewButton={true}
         className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
       />
     </div>

@@ -332,14 +332,14 @@ export const TaskCard: React.FC<{
 
         {/* View Button */}
         {showViewButton && onViewClick && (
-          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-700 pointer-events-none">
+          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
             <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onViewClick();
               }}
-              className="px-3 py-1 text-xs bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1 pointer-events-auto"
+              className="px-3 py-1 text-xs bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -354,6 +354,7 @@ export const TaskCard: React.FC<{
   );
 };
 
+// ...
 // Card para estadísticas
 export const StatsCard: React.FC<{
   title: string;
