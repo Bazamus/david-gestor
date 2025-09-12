@@ -19,11 +19,14 @@ import {
 // Components
 import Button from '@/components/common/Button';
 import { StatsCard } from '@/components/common/Card';
+import TimeSummaryCard from '@/components/times/TimeSummaryCard';
+import TimeEntriesTable from '@/components/times/TimeEntriesTable';
 
 // Hooks
 import { useProject, useProjectStats, useDeleteProject } from '@/hooks/useProjects';
 import { useProjectTasks } from '@/hooks/useTasks';
 import { useProjectTabs } from '@/hooks/useProjectTabs';
+import { useTimeEntries, useTimeSummary } from '@/hooks/useTimeEntries';
 
 // Types
 import { ProjectStatus } from '@/types';
@@ -44,6 +47,10 @@ const ProjectDetail: React.FC = () => {
   const { data: tasks } = useProjectTasks(id!);
   const deleteProject = useDeleteProject();
   const { activeTab, tabs, setActiveTab } = useProjectTabs();
+  
+  // Time tracking hooks - filtrar por proyecto
+  const { data: timeEntries } = useTimeEntries({ project_id: id });
+  const { data: timeSummary } = useTimeSummary({ project_id: id });
 
   const handleDeleteProject = async () => {
     if (!project) return;
@@ -351,26 +358,28 @@ const ProjectDetail: React.FC = () => {
           </nav>
 
           {/* Mobile Tabs */}
-          <nav className="md:hidden flex space-x-1 overflow-x-auto scrollbar-hide">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex flex-col items-center space-y-1 py-3 px-3 border-b-2 font-medium text-xs transition-colors whitespace-nowrap flex-shrink-0 ${
-                    isActive
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
+          <nav className="md:hidden">
+            <div className="flex w-full">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 flex flex-col items-center justify-center py-2 px-1 border-b-2 font-medium text-xs transition-colors ${
+                      isActive
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    <Icon className="w-3 h-3 mb-1" />
+                    <span className="text-xs leading-none text-center">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </nav>
         </div>
       </div>
@@ -659,6 +668,24 @@ const ProjectDetail: React.FC = () => {
           
           {activeTab === 'kanban' && (
             <ProjectKanban projectId={project.id} />
+          )}
+          
+          {activeTab === 'time' && (
+            <div className="space-y-6">
+              {/* Resumen de Tiempo */}
+              <TimeSummaryCard summary={timeSummary || {
+                total_entries: 0,
+                total_hours: 0,
+                billable_hours: 0,
+                billable_amount: 0
+              }} />
+              
+              {/* Tabla de Entradas de Tiempo */}
+              <TimeEntriesTable 
+                entries={timeEntries || []} 
+                showActions={false}
+              />
+            </div>
           )}
           
           {activeTab === 'stats' && (

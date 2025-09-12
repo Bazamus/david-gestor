@@ -4,7 +4,8 @@ import {
   FolderIcon, 
   CheckSquareIcon, 
   LayoutIcon,
-  BarChart3Icon
+  BarChart3Icon,
+  ClockIcon
 } from 'lucide-react';
 
 export interface ProjectTab {
@@ -17,6 +18,7 @@ export const PROJECT_TABS: ProjectTab[] = [
   { id: 'summary', label: 'Resumen', icon: FolderIcon },
   { id: 'tasks', label: 'Tareas', icon: CheckSquareIcon },
   { id: 'kanban', label: 'Kanban', icon: LayoutIcon },
+  { id: 'time', label: 'Tiempo', icon: ClockIcon },
   { id: 'stats', label: 'Estadísticas', icon: BarChart3Icon },
 ];
 
