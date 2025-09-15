@@ -10,11 +10,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: [
-        'favicon.ico', 
-        'apple-touch-icon.png', 
-        'masked-icon.svg',
-        'pwa-192x192.png',
-        'pwa-512x512.png'
+        '../PWA/icons/android/android-launchericon-192-192.png',
+        '../PWA/icons/android/android-launchericon-512-512.png',
+        '../PWA/icons/ios/180.png'
       ],
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
@@ -69,20 +67,35 @@ export default defineConfig({
         scope: '/',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: '../PWA/icons/android/android-launchericon-192-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: 'pwa-512x512.png',
+            src: '../PWA/icons/android/android-launchericon-512-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: 'apple-touch-icon.png',
+            src: '../PWA/icons/ios/180.png',
             sizes: '180x180',
+            type: 'image/png'
+          },
+          {
+            src: '../PWA/icons/android/android-launchericon-144-144.png',
+            sizes: '144x144',
+            type: 'image/png'
+          },
+          {
+            src: '../PWA/icons/android/android-launchericon-96-96.png',
+            sizes: '96x96',
+            type: 'image/png'
+          },
+          {
+            src: '../PWA/icons/android/android-launchericon-72-72.png',
+            sizes: '72x72',
             type: 'image/png'
           }
         ],

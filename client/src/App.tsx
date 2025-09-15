@@ -32,7 +32,7 @@ import { CommandPaletteProvider } from '@/contexts/CommandPaletteContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 // PWA Components
-import { OfflineBanner, InstallPrompt, UpdatePrompt } from '@/pwa';
+import { OfflineIndicator, PWAInstallPrompt, PWAUpdatePrompt } from '@/components/pwa';
 
 // Protected routes
 import { ProtectedRoute, AdminRoute } from '@/components/common/ProtectedRoute';
@@ -49,9 +49,9 @@ function App() {
             <CommandPaletteProvider>
               <div className="min-h-screen bg-background text-foreground">
                 {/* PWA Components */}
-                <OfflineBanner />
-                <InstallPrompt />
-                <UpdatePrompt />
+                <OfflineIndicator />
+                <PWAInstallPrompt />
+                <PWAUpdatePrompt />
                 
                 <Routes>
                   {/* Public routes */}
