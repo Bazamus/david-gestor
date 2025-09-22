@@ -30,6 +30,7 @@ export const getProjects = asyncHandler(async (req: Request, res: Response, next
     search: req.query.search as string,
     start_date: req.query.start_date as string,
     end_date: req.query.end_date as string,
+    cliente: req.query.cliente as string,
     sort_by: req.query.sort_by as any || 'created_at',
     sort_order: req.query.sort_order as any || 'desc',
     limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,

@@ -67,6 +67,10 @@ class SupabaseService {
       query = query.lte('end_date', filters.end_date);
     }
 
+    if (filters?.cliente) {
+      query = query.ilike('cliente_empresa', `%${filters.cliente}%`);
+    }
+
     // Ordenamiento
     const sortBy = filters?.sort_by || 'created_at';
     const sortOrder = filters?.sort_order || 'desc';

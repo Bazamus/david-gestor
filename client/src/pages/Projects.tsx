@@ -9,7 +9,7 @@ import { CardSkeleton } from '@/components/common/Loading';
 import SearchInput from '@/components/common/SearchInput';
 
 // Hooks
-import { useProjects } from '@/hooks/useProjects';
+import { useProjects, useProjectClients } from '@/hooks/useProjects';
 
 // Types
 import { ProjectStatus } from '@/types';
@@ -37,6 +37,7 @@ const Projects: React.FC = () => {
     
     const statusParam = searchParams.get('status');
     const searchParam = searchParams.get('search');
+    const clienteParam = searchParams.get('cliente');
     
     const initialFilters: ProjectFilters = {};
     
@@ -52,6 +53,10 @@ const Projects: React.FC = () => {
     
     if (searchParam) {
       initialFilters.search = searchParam;
+    }
+    
+    if (clienteParam) {
+      initialFilters.cliente = clienteParam;
     }
     
     // Solo actualizar si hay cambios reales
@@ -84,6 +89,10 @@ const Projects: React.FC = () => {
     
     if (updatedFilters.search) {
       newSearchParams.set('search', updatedFilters.search);
+    }
+    
+    if (updatedFilters.cliente) {
+      newSearchParams.set('cliente', updatedFilters.cliente);
     }
     
     // Solo actualizar URL si realmente ha cambiado
@@ -212,6 +221,8 @@ interface ProjectFiltersProps {
 }
 
 const ProjectFilters: React.FC<ProjectFiltersProps> = ({ filters, onFilterChange }) => {
+  const { data: clients = [] } = useProjectClients();
+
   const projectStatuses = [
     { value: ProjectStatus.PLANNING, label: 'Planificación', color: 'bg-gray-100 text-gray-800' },
     { value: ProjectStatus.ACTIVE, label: 'Activo', color: 'bg-blue-100 text-blue-800' },
@@ -227,7 +238,7 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({ filters, onFilterChange
         <h3 className="text-sm font-medium text-gray-900 dark:text-white">Filtros</h3>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Search */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -256,6 +267,25 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({ filters, onFilterChange
             {projectStatuses.map((status) => (
               <option key={status.value} value={status.value}>
                 {status.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Cliente */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Cliente
+          </label>
+          <select
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            value={filters.cliente || ''}
+            onChange={(e) => onFilterChange({ cliente: e.target.value || undefined })}
+          >
+            <option value="">Todos los clientes</option>
+            {clients.map((client) => (
+              <option key={client} value={client}>
+                {client}
               </option>
             ))}
           </select>
@@ -302,12 +332,12 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({ filters, onFilterChange
       </div>
 
       {/* Clear filters button */}
-      {(filters.search || filters.status || filters.start_date || filters.sort_by !== 'updated_at' || filters.sort_order !== 'desc') && (
+      {(filters.search || filters.status || filters.start_date || filters.cliente || filters.sort_by !== 'updated_at' || filters.sort_order !== 'desc') && (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onFilterChange({ search: undefined, status: undefined, start_date: undefined, sort_by: 'updated_at', sort_order: 'desc' })}
+            onClick={() => onFilterChange({ search: undefined, status: undefined, start_date: undefined, cliente: undefined, sort_by: 'updated_at', sort_order: 'desc' })}
             className="text-gray-600 dark:text-gray-400"
           >
             Limpiar filtros

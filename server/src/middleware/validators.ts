@@ -680,6 +680,12 @@ export const validateProjectFilters = [
     .isISO8601()
     .withMessage('Fecha de fin debe ser una fecha válida (ISO 8601)'),
   
+  query('cliente')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage('El nombre del cliente debe tener entre 1 y 255 caracteres'),
+  
   query('sort_by')
     .optional()
     .isIn(['name', 'created_at', 'updated_at', 'status'])

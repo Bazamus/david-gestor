@@ -374,6 +374,7 @@ export interface ProjectFilters {
   search?: string;
   start_date?: string;
   end_date?: string;
+  cliente?: string;
   sort_by?: 'name' | 'created_at' | 'updated_at' | 'status';
   sort_order?: 'asc' | 'desc';
   limit?: number;

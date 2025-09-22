@@ -19,11 +19,8 @@ export const projectKeys = {
   details: () => [...projectKeys.all, 'detail'] as const,
   detail: (id: string) => [...projectKeys.details(), id] as const,
   stats: (id: string) => [...projectKeys.all, 'stats', id] as const,
+  clients: () => [...projectKeys.all, 'clients'] as const,
 };
-
-// ======================================
-// QUERY HOOKS
-// ======================================
 
 /**
  * Hook para obtener lista de proyectos
@@ -123,10 +120,11 @@ export const useCreateProject = (options?: UseMutationOptions<ProjectWithStats, 
       // Invalidar TODAS las queries relacionadas con proyectos
       queryClient.invalidateQueries({ queryKey: projectKeys.all });
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
-      
+      queryClient.invalidateQueries({ queryKey: projectKeys.clients() });
+
       // Invalidar queries de dashboard
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      
+
       // Forzar refetch inmediato de las queries más importantes
       queryClient.refetchQueries({ queryKey: projectKeys.lists() });
       queryClient.refetchQueries({ queryKey: ['dashboard'] });
@@ -175,7 +173,8 @@ export const useUpdateProject = (options?: UseMutationOptions<Project, { id: str
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: projectKeys.stats(variables.id) });
-      
+      queryClient.invalidateQueries({ queryKey: projectKeys.clients() });
+
       // Invalidar queries de dashboard
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       
@@ -224,11 +223,12 @@ export const useDeleteProject = (options?: UseMutationOptions<void, string>) => 
       // Remover de caché
       queryClient.removeQueries({ queryKey: projectKeys.detail(projectId) });
       queryClient.removeQueries({ queryKey: projectKeys.stats(projectId) });
-      
+
       // Invalidar listas
       queryClient.invalidateQueries({ queryKey: projectKeys.all });
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
-      
+      queryClient.invalidateQueries({ queryKey: projectKeys.clients() });
+
       // Invalidar dashboard
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       
@@ -283,6 +283,7 @@ export const useArchiveProject = (options?: UseMutationOptions<ProjectWithStats,
       queryClient.setQueryData(projectKeys.detail(projectId), data);
       queryClient.invalidateQueries({ queryKey: projectKeys.all });
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: projectKeys.clients() });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       
       // Forzar refetch
@@ -338,6 +339,35 @@ export const useSearchProjects = (query: string, options?: UseApiOptions) => {
     queryFn: () => projectService.searchProjects(query),
     enabled: query.length >= 2,
     staleTime: 30 * 1000, // 30 segundos
+    ...options,
+  });
+};
+
+/**
+ * Hook para obtener clientes únicos de proyectos
+ */
+export const useProjectClients = (options?: UseApiOptions) => {
+  return useQuery({
+    queryKey: projectKeys.clients(),
+    queryFn: async () => {
+      // Obtener todos los proyectos sin filtros para extraer clientes
+      const projects = await projectService.getProjects();
+
+      // Extraer clientes únicos del campo cliente_empresa
+      const clientsSet = new Set<string>();
+      projects.forEach(project => {
+        if (project.cliente_empresa && project.cliente_empresa.trim()) {
+          clientsSet.add(project.cliente_empresa.trim());
+        }
+      });
+
+      // Convertir a array ordenado alfabéticamente
+      const clients = Array.from(clientsSet).sort((a, b) => a.localeCompare(b));
+
+      return clients;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false, // No refetch automático
     ...options,
   });
 };
