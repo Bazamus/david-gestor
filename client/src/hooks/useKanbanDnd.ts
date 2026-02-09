@@ -33,7 +33,7 @@ interface UseKanbanDndReturn {
   sensors: ReturnType<typeof useSensors>;
   /** Handler para onDragStart de DndContext */
   handleDragStart: (event: DragStartEvent) => void;
-  /** Handler para onDragOver de DndContext */
+  /** Handler para onDragOver de DndContext (no-op, el DragOverlay da feedback visual) */
   handleDragOver: (event: DragOverEvent) => void;
   /** Handler para onDragEnd de DndContext */
   handleDragEnd: (event: DragEndEvent) => void;
@@ -47,6 +47,11 @@ interface UseKanbanDndReturn {
  * - Actualización optimista local al soltar (sin esperar al API)
  * - Cálculo de newStatus y newPosition
  * - Llamada a la mutación de posición con rollback en caso de error
+ * 
+ * NOTA: NO se mueven items entre SortableContexts durante onDragOver
+ * porque eso causa que dnd-kit pierda el tracking del item activo y
+ * el drop falle silenciosamente. El DragOverlay ya proporciona
+ * feedback visual suficiente durante el arrastre.
  * 
  * @param tasks - Array de tareas (del query)
  * @param tasksByStatus - Tareas agrupadas por estado (del memo del componente)
@@ -132,42 +137,15 @@ export function useKanbanDnd(
     setActiveId(event.active.id as string);
   }, []);
 
+  // onDragOver: NO modificamos el estado de las columnas aquí.
+  // Mover items entre SortableContexts durante el drag causa que dnd-kit
+  // pierda el tracking del item activo y el drop falle.
+  // El feedback visual lo proporciona el DragOverlay + el highlight de la columna (isOver).
   const handleDragOver = useCallback(
-    (event: DragOverEvent) => {
-      const { active, over } = event;
-      if (!over) return;
-
-      const activeTask = findTask(active.id as string);
-      if (!activeTask) return;
-
-      const overId = over.id.toString();
-
-      // Determinar el status de destino
-      let targetStatus: string | null = null;
-
-      if (overId.startsWith('column-')) {
-        targetStatus = overId.replace('column-', '');
-      } else {
-        const overTask = findTask(overId);
-        if (overTask) {
-          targetStatus = overTask.status;
-        }
-      }
-
-      // Si el destino es diferente a la columna actual, mostrar preview optimista
-      if (targetStatus && activeTask.status !== targetStatus) {
-        const base = optimisticOverride || tasksByStatus;
-        const newState = buildOptimisticState(
-          base,
-          activeTask.id,
-          activeTask.status,
-          targetStatus,
-          0 // Al inicio por defecto durante el over
-        );
-        setOptimisticOverride(newState);
-      }
+    (_event: DragOverEvent) => {
+      // Intencionalmente vacío - ver nota arriba
     },
-    [findTask, tasksByStatus, optimisticOverride, buildOptimisticState]
+    []
   );
 
   const handleDragEnd = useCallback(
@@ -177,7 +155,6 @@ export function useKanbanDnd(
       setActiveId(null);
 
       if (!over || active.id === over.id) {
-        // Cancelar el override optimista si no hubo drop válido
         setOptimisticOverride(null);
         return;
       }
@@ -194,7 +171,7 @@ export function useKanbanDnd(
       const overId = over.id.toString();
 
       if (overId.startsWith('column-')) {
-        // Drop sobre una columna vacía o su zona general
+        // Drop sobre una columna (vacía o zona general)
         newStatus = overId.replace('column-', '') as TaskStatus;
         newPosition = 0;
       } else {
@@ -227,11 +204,17 @@ export function useKanbanDnd(
         }
       }
 
+      // Evitar llamada innecesaria si no hay cambio real
+      if (activeTask.status === newStatus && newPosition === (activeTask.position ?? 0)) {
+        setOptimisticOverride(null);
+        return;
+      }
+
       // ── Actualización optimista ──────────────────────────────────
       // Guardar estado anterior para rollback
       rollbackRef.current = { ...tasksByStatus };
 
-      // Construir estado optimista final
+      // Construir estado optimista final y aplicar inmediatamente en la UI
       const optimistic = buildOptimisticState(
         tasksByStatus,
         activeTask.id,
@@ -252,8 +235,14 @@ export function useKanbanDnd(
         setOptimisticOverride(null);
       } catch (error) {
         console.error('Error al mover tarea:', error);
-        // Rollback: restaurar estado anterior
-        setOptimisticOverride(null);
+        // Rollback: restaurar estado anterior para que la UI vuelva al estado original
+        if (rollbackRef.current) {
+          setOptimisticOverride(rollbackRef.current);
+          // Limpiar después de un breve delay para que el usuario vea el estado revertido
+          setTimeout(() => setOptimisticOverride(null), 100);
+        } else {
+          setOptimisticOverride(null);
+        }
       } finally {
         rollbackRef.current = null;
       }
