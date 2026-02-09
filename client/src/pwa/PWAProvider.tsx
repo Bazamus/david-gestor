@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 // Importación condicional para evitar errores de TypeScript
 let registerSW: any;
@@ -40,6 +40,10 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
+  // Ref para almacenar la función updateSW retornada por registerSW.
+  // Esta es la forma CORRECTA de triggear la actualización con vite-plugin-pwa.
+  const updateSWRef = useRef<((reloadPage?: boolean) => Promise<void>) | null>(null);
+
   // Registrar Service Worker
   useEffect(() => {
     const updateSW = registerSW({
@@ -56,6 +60,9 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
         console.error('Error al registrar Service Worker:', error);
       },
     });
+
+    // Guardar referencia para usarla en skipWaiting
+    updateSWRef.current = updateSW;
 
     return () => {
       updateSW();
@@ -120,15 +127,28 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     }
   };
 
-  const skipWaiting = () => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then((registration) => {
+  const skipWaiting = async () => {
+    // Usar la función updateSW de vite-plugin-pwa (forma correcta)
+    // Esto envía SKIP_WAITING al SW en espera y recarga la página.
+    if (updateSWRef.current) {
+      try {
+        setUpdateAvailable(false);
+        await updateSWRef.current(true); // true = recargar página tras activar el nuevo SW
+      } catch (error) {
+        console.error('Error al actualizar SW:', error);
+        // Fallback: recargar la página directamente
+        window.location.reload();
+      }
+    } else {
+      // Fallback manual si updateSW no está disponible
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
         if (registration && registration.waiting) {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          setUpdateAvailable(false);
-          window.location.reload();
         }
-      });
+        setUpdateAvailable(false);
+        window.location.reload();
+      }
     }
   };
 

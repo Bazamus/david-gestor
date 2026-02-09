@@ -1,49 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { RefreshCw, X } from 'lucide-react';
+import { usePWA } from '@/pwa/PWAProvider';
 
 export const PWAUpdatePrompt: React.FC = () => {
-  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then((reg) => {
-        setRegistration(reg);
-
-        // Escuchar actualizaciones del service worker
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                setShowUpdatePrompt(true);
-              }
-            });
-          }
-        });
-      });
-
-      // Escuchar mensajes del service worker
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'SW_UPDATE_AVAILABLE') {
-          setShowUpdatePrompt(true);
-        }
-      });
-    }
-  }, []);
+  const { updateAvailable, skipWaiting } = usePWA();
+  const [dismissed, setDismissed] = useState(false);
 
   const handleUpdate = () => {
-    if (registration && registration.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      window.location.reload();
-    }
+    skipWaiting();
   };
 
   const handleDismiss = () => {
-    setShowUpdatePrompt(false);
+    setDismissed(true);
   };
 
-  if (!showUpdatePrompt) return null;
+  if (!updateAvailable || dismissed) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-blue-600 text-white rounded-lg shadow-lg p-4 z-50">
