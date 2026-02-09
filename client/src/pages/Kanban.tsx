@@ -1,22 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileKanban } from '@/components/mobile';
 import { 
   DndContext, 
-  DragEndEvent, 
-  DragOverEvent,
   closestCorners,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
   DragOverlay,
   useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
@@ -35,8 +28,9 @@ import { TaskCard } from '@/components/common/Card';
 import SearchInput from '@/components/common/SearchInput';
 
 // Hooks
-import { useTasks, useProjectTasks, useUpdateTaskPosition } from '@/hooks/useTasks';
+import { useTasks, useProjectTasks } from '@/hooks/useTasks';
 import { useProjects } from '@/hooks/useProjects';
+import { useKanbanDnd } from '@/hooks/useKanbanDnd';
 
 // Types
 import { Task, TaskWithProject, TaskStatus, TaskPriority } from '@/types';
@@ -46,19 +40,10 @@ const Kanban: React.FC = () => {
   const navigate = useNavigate();
   const { id: projectId } = useParams<{ id: string }>();
   const { isMobile } = useIsMobile();
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [filters, setFilters] = useState<TaskFilters>({});
 
   // Detectar si es vista global o específica de proyecto
   const isGlobalView = !projectId;
-
-  // Sensors para drag & drop - SIEMPRE se debe llamar
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   // Datos condicionales: global vs específico de proyecto - SIEMPRE se debe llamar
   const globalQuery = useTasks(filters, { enabled: isGlobalView });
@@ -67,7 +52,6 @@ const Kanban: React.FC = () => {
   const { data: projects, isLoading: projectsLoading } = projectsQuery;
   
   const { data: tasks, isLoading, isError } = isGlobalView ? globalQuery : projectQuery;
-  const updateTaskPosition = useUpdateTaskPosition();
 
   // Organizar tareas por estado - SIEMPRE se debe llamar
   const tasksByStatus = React.useMemo(() => {
@@ -81,74 +65,20 @@ const Kanban: React.FC = () => {
     }, {} as Record<TaskStatus, (Task | TaskWithProject)[]>);
   }, [tasks]);
 
+  // Hook compartido para drag & drop (incluye sensors, handlers y optimistic updates)
+  const {
+    activeId,
+    optimisticTasksByStatus,
+    sensors,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+  } = useKanbanDnd(tasks as (Task | TaskWithProject)[] | undefined, tasksByStatus);
+
   // Handler para cambios de filtros
   const handleFilterChange = (newFilters: Partial<TaskFilters>) => {
     setFilters((prev: TaskFilters) => ({ ...prev, ...newFilters }));
   };
-
-  // Manejar drag over (para cambio entre columnas)
-  const handleDragOver = useCallback((event: DragOverEvent) => {
-    const { active, over } = event;
-    
-    if (!over) return;
-    
-    // Si se arrastra sobre una columna (DroppableColumn)
-    if (over.id.toString().startsWith('column-')) {
-      const newStatus = over.id.toString().replace('column-', '') as TaskStatus;
-      const activeTask = Array.isArray(tasks) ? tasks.find(task => task.id === active.id) : null;
-      
-      if (activeTask && activeTask.status !== newStatus) {
-        // Aquí podrías mostrar preview de cambio si quisieras
-      }
-    }
-  }, [tasks]);
-
-  // Manejar drag end
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    setActiveId(null);
-    
-    if (!over || active.id === over.id) {
-      return;
-    }
-
-    if (!Array.isArray(tasks)) return;
-
-    const activeTask = tasks.find(task => task.id === active.id);
-    if (!activeTask) return;
-
-    let newStatus: TaskStatus = activeTask.status as TaskStatus;
-    let newPosition = 0;
-
-    // Si se suelta sobre una columna (DroppableColumn)
-    if (over.id.toString().startsWith('column-')) {
-      newStatus = over.id.toString().replace('column-', '') as TaskStatus;
-      newPosition = 0; // Al principio de la columna
-    } 
-    // Si se suelta sobre otra tarea
-    else {
-      const overTask = tasks.find(task => task.id === over.id);
-      if (!overTask) return;
-      
-      newStatus = overTask.status as TaskStatus;
-      const targetColumnTasks = (tasksByStatus as any)[newStatus] || [];
-      newPosition = targetColumnTasks.findIndex((task: Task | TaskWithProject) => task.id === over.id);
-    }
-
-    // Solo actualizar si hay cambios
-    if (activeTask.status !== newStatus || newPosition !== activeTask.position) {
-      try {
-        await updateTaskPosition.mutateAsync({
-          taskId: activeTask.id,
-          newStatus,
-          newPosition,
-        });
-      } catch (error) {
-        console.error('Error al mover tarea:', error);
-      }
-    }
-  }, [tasks, tasksByStatus, updateTaskPosition]);
 
   // AHORA podemos hacer el renderizado condicional después de que todos los hooks se hayan llamado
   if (isMobile) {
@@ -216,7 +146,7 @@ const Kanban: React.FC = () => {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
-        onDragStart={({ active }) => setActiveId(active.id as string)}
+        onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
@@ -225,7 +155,7 @@ const Kanban: React.FC = () => {
           <KanbanColumn
             title="Por Hacer"
             status={'todo' as TaskStatus}
-            tasks={tasksByStatus.todo || []}
+            tasks={optimisticTasksByStatus.todo || []}
             color="blue"
             isGlobal={isGlobalView}
           />
@@ -234,7 +164,7 @@ const Kanban: React.FC = () => {
           <KanbanColumn
             title="En Progreso"
             status={'in_progress' as TaskStatus}
-            tasks={tasksByStatus.in_progress || []}
+            tasks={optimisticTasksByStatus.in_progress || []}
             color="yellow"
             isGlobal={isGlobalView}
           />
@@ -243,7 +173,7 @@ const Kanban: React.FC = () => {
           <KanbanColumn
             title="Completado"
             status={'done' as TaskStatus}
-            tasks={tasksByStatus.done || []}
+            tasks={optimisticTasksByStatus.done || []}
             color="green"
             isGlobal={isGlobalView}
           />

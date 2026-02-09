@@ -276,25 +276,14 @@ export const useUpdateTaskPosition = (options?: UseMutationOptions<Task, {
       status: newStatus 
     }),
     onSuccess: (updatedTask) => {
-      // Invalidar queries de Kanban y proyecto inmediatamente
+      // Invalidar solo queries estrictamente necesarias para Kanban
+      // Las demás (dashboard, overdue, upcoming) se actualizarán cuando el usuario navegue
       queryClient.invalidateQueries({ queryKey: taskKeys.kanban(updatedTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.project(updatedTask.project_id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: taskKeys.overdue() });
-      queryClient.invalidateQueries({ queryKey: taskKeys.upcoming() });
-      
-      // Invalidar queries de proyectos
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['project', updatedTask.project_id] });
-      queryClient.invalidateQueries({ queryKey: ['project-stats', updatedTask.project_id] });
-      
-      // Invalidar dashboard
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      
-      // Forzar refetch inmediato para Kanban
-      queryClient.refetchQueries({ queryKey: taskKeys.kanban(updatedTask.project_id) });
+
+      // Refetch solo del proyecto actual (la fuente de datos del Kanban)
       queryClient.refetchQueries({ queryKey: taskKeys.project(updatedTask.project_id) });
-      queryClient.refetchQueries({ queryKey: ['project', updatedTask.project_id] });
       
       // No mostrar notificación para movimientos de Kanban
     },

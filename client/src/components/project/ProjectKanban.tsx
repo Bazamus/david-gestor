@@ -1,20 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   DndContext, 
-  DragEndEvent, 
-  DragOverEvent,
   closestCorners,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
   DragOverlay,
   useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
@@ -29,7 +22,8 @@ import { CardSkeleton } from '@/components/common/Loading';
 import { TaskCard } from '@/components/common/Card';
 
 // Hooks
-import { useProjectTasks, useUpdateTaskPosition } from '@/hooks/useTasks';
+import { useProjectTasks } from '@/hooks/useTasks';
+import { useKanbanDnd } from '@/hooks/useKanbanDnd';
 
 // Types
 import { Task, TaskStatus } from '@/types';
@@ -40,19 +34,9 @@ interface ProjectKanbanProps {
 
 const ProjectKanban: React.FC<ProjectKanbanProps> = ({ projectId }) => {
   const navigate = useNavigate();
-  const [activeId, setActiveId] = useState<string | null>(null);
-
-  // Sensors para drag & drop
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   // Datos del proyecto y tareas
   const { data: tasks, isLoading, isError } = useProjectTasks(projectId!);
-  const updateTaskPosition = useUpdateTaskPosition();
 
   // Organizar tareas por estado
   const tasksByStatus = React.useMemo(() => {
@@ -64,7 +48,7 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ projectId }) => {
       };
     }
     
-    const defaultColumns = { 
+    const defaultColumns: Record<string, Task[]> = { 
       todo: [], 
       in_progress: [], 
       done: [] 
@@ -75,111 +59,18 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ projectId }) => {
       if (!acc[status]) acc[status] = [];
       acc[status].push(task);
       return acc;
-    }, defaultColumns as any);
+    }, defaultColumns);
   }, [tasks]);
 
-  // Manejar drag over entre columnas
-  const handleDragOver = useCallback((event: DragOverEvent) => {
-    const { active, over } = event;
-    
-    if (!over) return;
-    
-    const activeId = active.id as string;
-    const overId = over.id as string;
-    
-    // Si es una columna (droppable)
-    if (overId.startsWith('column-')) {
-      const newStatus = overId.replace('column-', '') as TaskStatus;
-      const activeTask = tasks?.find(task => task.id === activeId);
-      
-      if (activeTask && activeTask.status !== newStatus) {
-        // Aquí podríamos mostrar un preview visual del drop
-      }
-    }
-  }, [tasks]);
-
-  // Manejar drag end
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (!over || active.id === over.id) {
-      setActiveId(null);
-      return;
-    }
-
-    // Validar que tasks existe y es un array
-    if (!tasks || !Array.isArray(tasks)) {
-      setActiveId(null);
-      return;
-    }
-
-    const activeTask = tasks.find(task => task.id === active.id);
-    
-    if (!activeTask) {
-      setActiveId(null);
-      return;
-    }
-
-    // Si se suelta en una columna
-    if (over.id.toString().startsWith('column-')) {
-      const newStatus = over.id.toString().replace('column-', '') as TaskStatus;
-      
-      if (activeTask.status !== newStatus) {
-        try {
-          await updateTaskPosition.mutateAsync({
-            taskId: activeTask.id,
-            newStatus: newStatus,
-            newPosition: 0, // Se insertará al principio de la nueva columna
-          });
-        } catch (error) {
-          console.error('Error al mover tarea:', error);
-        }
-      }
-    } else {
-      // Si se suelta en otra tarea
-      const overTask = tasks.find(task => task.id === over.id);
-      
-      if (!overTask) {
-        setActiveId(null);
-        return;
-      }
-
-      const activeStatus = activeTask.status as TaskStatus;
-      const overStatus = overTask.status as TaskStatus;
-
-      // Si se mueve a una columna diferente
-      if (activeStatus !== overStatus) {
-        try {
-          await updateTaskPosition.mutateAsync({
-            taskId: activeTask.id,
-            newStatus: overStatus,
-            newPosition: 0,
-          });
-        } catch (error) {
-          console.error('Error al mover tarea:', error);
-        }
-      } else {
-        // Si se mueve dentro de la misma columna
-        const activeStatusTasks = (tasksByStatus as any)[activeStatus] || [];
-        const oldIndex = activeStatusTasks.findIndex((task: any) => task.id === active.id);
-        const newIndex = activeStatusTasks.findIndex((task: any) => task.id === over.id);
-        
-        if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) {
-          try {
-            await updateTaskPosition.mutateAsync({
-              taskId: activeTask.id,
-              newStatus: activeStatus,
-              newPosition: newIndex,
-            });
-          } catch (error) {
-            console.error('Error al reordenar tarea:', error);
-          }
-        }
-      }
-    }
-    
-    setActiveId(null);
-  }, [tasks, tasksByStatus, updateTaskPosition]);
+  // Hook compartido para drag & drop (incluye sensors, handlers y optimistic updates)
+  const {
+    activeId,
+    optimisticTasksByStatus,
+    sensors,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+  } = useKanbanDnd(tasks, tasksByStatus);
 
   if (isLoading) {
     return <KanbanSkeleton />;
@@ -217,16 +108,16 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ projectId }) => {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
-        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
         onDragOver={handleDragOver}
-        onDragStart={({ active }) => setActiveId(active.id as string)}
+        onDragEnd={handleDragEnd}
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Columna: Por Hacer */}
           <KanbanColumn
             title="Por Hacer"
             status={TaskStatus.TODO}
-            tasks={tasksByStatus.todo}
+            tasks={optimisticTasksByStatus.todo || []}
             color="blue"
             projectId={projectId!}
           />
@@ -235,7 +126,7 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ projectId }) => {
           <KanbanColumn
             title="En Progreso"
             status={TaskStatus.IN_PROGRESS}
-            tasks={tasksByStatus.in_progress}
+            tasks={optimisticTasksByStatus.in_progress || []}
             color="yellow"
             projectId={projectId!}
           />
@@ -244,7 +135,7 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ projectId }) => {
           <KanbanColumn
             title="Completado"
             status={TaskStatus.DONE}
-            tasks={tasksByStatus.done}
+            tasks={optimisticTasksByStatus.done || []}
             color="green"
             projectId={projectId!}
           />
