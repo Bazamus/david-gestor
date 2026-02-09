@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   DndContext, 
-  closestCorners,
   DragOverlay,
   useDroppable,
 } from '@dnd-kit/core';
@@ -67,6 +66,7 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ projectId }) => {
     activeId,
     optimisticTasksByStatus,
     sensors,
+    collisionDetection,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
@@ -107,7 +107,7 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ projectId }) => {
       {/* Kanban Board */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={collisionDetection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   DragEndEvent,
   DragOverEvent,
@@ -7,8 +7,16 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  CollisionDetection,
+  pointerWithin,
+  closestCenter,
+  rectIntersection,
+  getFirstCollision,
 } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import {
+  sortableKeyboardCoordinates,
+  arrayMove,
+} from '@dnd-kit/sortable';
 
 import { useUpdateTaskPosition } from '@/hooks/useTasks';
 import { Task, TaskWithProject, TaskStatus } from '@/types';
@@ -27,13 +35,15 @@ interface UseKanbanDndOptions {
 interface UseKanbanDndReturn {
   /** ID de la tarea que se está arrastrando */
   activeId: string | null;
-  /** Tareas organizadas por estado (con actualizaciones optimistas aplicadas) */
+  /** Tareas organizadas por estado (con estado local de drag aplicado) */
   optimisticTasksByStatus: TasksByStatus;
   /** Sensors configurados para DndContext */
   sensors: ReturnType<typeof useSensors>;
+  /** Collision detection custom para multi-container */
+  collisionDetection: CollisionDetection;
   /** Handler para onDragStart de DndContext */
   handleDragStart: (event: DragStartEvent) => void;
-  /** Handler para onDragOver de DndContext (no-op, el DragOverlay da feedback visual) */
+  /** Handler para onDragOver de DndContext */
   handleDragOver: (event: DragOverEvent) => void;
   /** Handler para onDragEnd de DndContext */
   handleDragEnd: (event: DragEndEvent) => void;
@@ -41,21 +51,13 @@ interface UseKanbanDndReturn {
 
 /**
  * Hook compartido para la lógica de drag & drop del Kanban.
- * 
- * Centraliza:
- * - Configuración de sensors con activationConstraint
- * - Actualización optimista local al soltar (sin esperar al API)
- * - Cálculo de newStatus y newPosition
- * - Llamada a la mutación de posición con rollback en caso de error
- * 
- * NOTA: NO se mueven items entre SortableContexts durante onDragOver
- * porque eso causa que dnd-kit pierda el tracking del item activo y
- * el drop falle silenciosamente. El DragOverlay ya proporciona
- * feedback visual suficiente durante el arrastre.
- * 
- * @param tasks - Array de tareas (del query)
- * @param tasksByStatus - Tareas agrupadas por estado (del memo del componente)
- * @param options - Opciones de configuración
+ *
+ * Implementa el patrón multi-container oficial de dnd-kit:
+ * - Estado local de IDs por container (sincronizado con query data)
+ * - Collision detection custom: pointerWithin para columnas + closestCenter para items
+ * - onDragOver mueve items entre containers en estado local
+ * - onDragEnd finaliza con arrayMove (misma columna) o confirma cross-container + API
+ * - Rollback si el API falla
  */
 export function useKanbanDnd(
   tasks: KanbanTask[] | undefined,
@@ -67,11 +69,32 @@ export function useKanbanDnd(
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Estado optimista: se superpone sobre tasksByStatus mientras se resuelve la mutación
-  const [optimisticOverride, setOptimisticOverride] = useState<TasksByStatus | null>(null);
+  // ── Estado local: IDs de items por container ──────────────────────
+  // Se manipula rápidamente durante el drag sin re-derivar objetos completos.
+  const [containerItems, setContainerItems] = useState<Record<string, string[]>>({});
 
-  // Referencia para poder revertir en caso de error
-  const rollbackRef = useRef<TasksByStatus | null>(null);
+  // Sincronizar desde los datos del query cuando cambian
+  // (al cargar, tras refetch del API, etc.)
+  useEffect(() => {
+    // Solo sincronizar si NO estamos en medio de un drag
+    // para no pisar el estado local mientras el usuario arrastra.
+    if (activeId) return;
+
+    const next: Record<string, string[]> = {};
+    for (const [status, statusTasks] of Object.entries(tasksByStatus)) {
+      next[status] = statusTasks.map((t) => t.id);
+    }
+    setContainerItems(next);
+  }, [tasksByStatus, activeId]);
+
+  // Resetear containerItems al estado del query (para rollback)
+  const resetContainers = useCallback(() => {
+    const next: Record<string, string[]> = {};
+    for (const [status, statusTasks] of Object.entries(tasksByStatus)) {
+      next[status] = statusTasks.map((t) => t.id);
+    }
+    setContainerItems(next);
+  }, [tasksByStatus]);
 
   // ── Sensors ────────────────────────────────────────────────────────
   const sensors = useSensors(
@@ -88,47 +111,60 @@ export function useKanbanDnd(
   // ── Helpers ────────────────────────────────────────────────────────
   const safeTasks = Array.isArray(tasks) ? tasks : [];
 
-  const findTask = useCallback(
-    (id: string): KanbanTask | undefined => safeTasks.find((t) => t.id === id),
-    [safeTasks]
+  // Buscar en qué container está un item (no depende del status original)
+  const findContainer = useCallback(
+    (itemId: string): string | undefined => {
+      for (const [containerId, ids] of Object.entries(containerItems)) {
+        if (ids.includes(itemId)) return containerId;
+      }
+      return undefined;
+    },
+    [containerItems]
   );
 
-  // Construir un nuevo tasksByStatus moviendo una tarea
-  const buildOptimisticState = useCallback(
-    (
-      source: TasksByStatus,
-      taskId: string,
-      fromStatus: string,
-      toStatus: string,
-      toIndex: number
-    ): TasksByStatus => {
-      const result: TasksByStatus = {};
+  // ── Collision Detection Custom ─────────────────────────────────────
+  // Resuelve:
+  //   - Columnas vacías (pointerWithin detecta el DroppableColumn)
+  //   - Columnas con items (closestCenter dentro del container)
+  const collisionDetection: CollisionDetection = useCallback(
+    (args) => {
+      // 1. Buscar colisiones con pointerWithin (detecta columnas vacías)
+      const pointerCollisions = pointerWithin(args);
+      const collisions =
+        pointerCollisions.length > 0
+          ? pointerCollisions
+          : rectIntersection(args);
 
-      // Copiar todas las columnas
-      for (const key of Object.keys(source)) {
-        result[key] = [...(source[key] || [])];
+      const overId = getFirstCollision(collisions, 'id');
+
+      if (overId != null) {
+        const overStr = overId.toString();
+
+        // Si colisionamos con una columna que tiene items,
+        // buscar el item más cercano dentro de ella
+        if (overStr.startsWith('column-')) {
+          const containerId = overStr.replace('column-', '');
+          const itemIds = containerItems[containerId] || [];
+
+          if (itemIds.length > 0) {
+            const closestItems = closestCenter({
+              ...args,
+              droppableContainers: args.droppableContainers.filter(
+                (container) =>
+                  itemIds.includes(container.id.toString())
+              ),
+            });
+            if (closestItems.length > 0) return closestItems;
+          }
+        }
+
+        // Columna vacía o item directo
+        return collisions;
       }
 
-      // Encontrar y quitar la tarea de su columna origen
-      const fromColumn = result[fromStatus] || [];
-      const taskIndex = fromColumn.findIndex((t) => t.id === taskId);
-      if (taskIndex === -1) return source; // Seguridad
-      const [movedTask] = fromColumn.splice(taskIndex, 1);
-
-      // Crear copia de la tarea con status actualizado
-      const updatedTask = { ...movedTask, status: toStatus as TaskStatus };
-
-      // Insertar en la columna destino en la posición correcta
-      const toColumn = result[toStatus] || [];
-      const clampedIndex = Math.min(toIndex, toColumn.length);
-      toColumn.splice(clampedIndex, 0, updatedTask);
-
-      result[fromStatus] = fromColumn;
-      result[toStatus] = toColumn;
-
-      return result;
+      return [];
     },
-    []
+    [containerItems]
   );
 
   // ── Handlers ───────────────────────────────────────────────────────
@@ -137,15 +173,64 @@ export function useKanbanDnd(
     setActiveId(event.active.id as string);
   }, []);
 
-  // onDragOver: NO modificamos el estado de las columnas aquí.
-  // Mover items entre SortableContexts durante el drag causa que dnd-kit
-  // pierda el tracking del item activo y el drop falle.
-  // El feedback visual lo proporciona el DragOverlay + el highlight de la columna (isOver).
+  // onDragOver: detecta cruce entre containers y mueve el item ID
+  // al nuevo container en el estado local. Esto permite que:
+  // - La tarjeta aparezca visualmente en la columna destino mientras se arrastra
+  // - dnd-kit trackee el item en su nuevo SortableContext
   const handleDragOver = useCallback(
-    (_event: DragOverEvent) => {
-      // Intencionalmente vacío - ver nota arriba
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over) return;
+
+      const draggedId = active.id.toString();
+      const overId = over.id.toString();
+
+      // Determinar container origen y destino
+      const activeContainer = findContainer(draggedId);
+      const overContainer = overId.startsWith('column-')
+        ? overId.replace('column-', '')
+        : findContainer(overId);
+
+      // Si no encontramos containers o son el mismo, no hacer nada
+      if (
+        !activeContainer ||
+        !overContainer ||
+        activeContainer === overContainer
+      ) {
+        return;
+      }
+
+      // Mover item entre containers
+      setContainerItems((prev) => {
+        const activeItems = [...(prev[activeContainer] || [])];
+        const overItems = [...(prev[overContainer] || [])];
+
+        // Quitar del container origen
+        const activeIndex = activeItems.indexOf(draggedId);
+        if (activeIndex === -1) return prev;
+        activeItems.splice(activeIndex, 1);
+
+        // Calcular índice de inserción en destino
+        let insertIndex: number;
+        if (overId.startsWith('column-')) {
+          // Drop sobre la columna misma (vacía o zona general): al final
+          insertIndex = overItems.length;
+        } else {
+          // Drop sobre un item: insertar en su posición
+          const overIndex = overItems.indexOf(overId);
+          insertIndex = overIndex >= 0 ? overIndex : overItems.length;
+        }
+
+        overItems.splice(insertIndex, 0, draggedId);
+
+        return {
+          ...prev,
+          [activeContainer]: activeItems,
+          [overContainer]: overItems,
+        };
+      });
     },
-    []
+    [findContainer]
   );
 
   const handleDragEnd = useCallback(
@@ -154,110 +239,88 @@ export function useKanbanDnd(
 
       setActiveId(null);
 
-      if (!over || active.id === over.id) {
-        setOptimisticOverride(null);
+      if (!over) {
+        resetContainers();
         return;
       }
 
-      const activeTask = findTask(active.id as string);
-      if (!activeTask) {
-        setOptimisticOverride(null);
-        return;
-      }
-
-      let newStatus: TaskStatus = activeTask.status as TaskStatus;
-      let newPosition = 0;
-
+      const draggedId = active.id.toString();
       const overId = over.id.toString();
 
-      if (overId.startsWith('column-')) {
-        // Drop sobre una columna (vacía o zona general)
-        newStatus = overId.replace('column-', '') as TaskStatus;
-        newPosition = 0;
-      } else {
-        // Drop sobre otra tarea
-        const overTask = findTask(overId);
-        if (!overTask) {
-          setOptimisticOverride(null);
-          return;
-        }
+      // Determinar containers
+      const activeContainer = findContainer(draggedId);
+      const overContainer = overId.startsWith('column-')
+        ? overId.replace('column-', '')
+        : findContainer(overId);
 
-        newStatus = overTask.status as TaskStatus;
-
-        // Calcular posición usando la columna de destino
-        const targetColumn = tasksByStatus[newStatus] || [];
-
-        if (activeTask.status === newStatus) {
-          // Reordenamiento dentro de la misma columna
-          const oldIndex = targetColumn.findIndex((t) => t.id === active.id);
-          const newIndex = targetColumn.findIndex((t) => t.id === over.id);
-          if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-            newPosition = newIndex;
-          } else {
-            setOptimisticOverride(null);
-            return;
-          }
-        } else {
-          // Movimiento entre columnas: posición = índice de la tarea de destino
-          newPosition = targetColumn.findIndex((t) => t.id === over.id);
-          if (newPosition === -1) newPosition = 0;
-        }
-      }
-
-      // Evitar llamada innecesaria si no hay cambio real
-      if (activeTask.status === newStatus && newPosition === (activeTask.position ?? 0)) {
-        setOptimisticOverride(null);
+      if (!activeContainer || !overContainer) {
+        resetContainers();
         return;
       }
 
-      // ── Actualización optimista ──────────────────────────────────
-      // Guardar estado anterior para rollback
-      rollbackRef.current = { ...tasksByStatus };
+      if (activeContainer === overContainer) {
+        // ── Mismo container: reordenar con arrayMove ─────────────
+        const items = containerItems[activeContainer] || [];
+        const oldIndex = items.indexOf(draggedId);
+        const newIndex = items.indexOf(overId);
 
-      // Construir estado optimista final y aplicar inmediatamente en la UI
-      const optimistic = buildOptimisticState(
-        tasksByStatus,
-        activeTask.id,
-        activeTask.status,
-        newStatus,
-        newPosition
-      );
-      setOptimisticOverride(optimistic);
+        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+          const reordered = arrayMove(items, oldIndex, newIndex);
+          setContainerItems((prev) => ({
+            ...prev,
+            [activeContainer]: reordered,
+          }));
 
-      // ── Llamada al API ──────────────────────────────────────────
-      try {
-        await updateTaskPosition.mutateAsync({
-          taskId: activeTask.id,
-          newStatus,
-          newPosition,
-        });
-        // Éxito: limpiar el override, el refetch del query lo sustituirá
-        setOptimisticOverride(null);
-      } catch (error) {
-        console.error('Error al mover tarea:', error);
-        // Rollback: restaurar estado anterior para que la UI vuelva al estado original
-        if (rollbackRef.current) {
-          setOptimisticOverride(rollbackRef.current);
-          // Limpiar después de un breve delay para que el usuario vea el estado revertido
-          setTimeout(() => setOptimisticOverride(null), 100);
-        } else {
-          setOptimisticOverride(null);
+          // Llamar al API
+          try {
+            await updateTaskPosition.mutateAsync({
+              taskId: draggedId,
+              newStatus: activeContainer as TaskStatus,
+              newPosition: newIndex,
+            });
+          } catch (error) {
+            console.error('Error al reordenar tarea:', error);
+            resetContainers();
+          }
         }
-      } finally {
-        rollbackRef.current = null;
+      } else {
+        // ── Cross-container (ya movido en onDragOver) ────────────
+        const overItems = containerItems[overContainer] || [];
+        const newIndex = overItems.indexOf(draggedId);
+
+        // Llamar al API
+        try {
+          await updateTaskPosition.mutateAsync({
+            taskId: draggedId,
+            newStatus: overContainer as TaskStatus,
+            newPosition: Math.max(0, newIndex),
+          });
+        } catch (error) {
+          console.error('Error al mover tarea entre columnas:', error);
+          resetContainers();
+        }
       }
     },
-    [findTask, tasksByStatus, buildOptimisticState, updateTaskPosition]
+    [findContainer, containerItems, updateTaskPosition, resetContainers]
   );
 
-  // ── Valor de retorno ───────────────────────────────────────────────
-  // Si hay un override optimista activo, usarlo; si no, usar tasksByStatus original
-  const optimisticTasksByStatus = optimisticOverride || tasksByStatus;
+  // ── Derivar optimisticTasksByStatus de containerItems ──────────────
+  // Convierte IDs -> objetos de tarea completos para el render.
+  const optimisticTasksByStatus = useMemo(() => {
+    const result: TasksByStatus = {};
+    for (const [status, ids] of Object.entries(containerItems)) {
+      result[status] = ids
+        .map((id) => safeTasks.find((t) => t.id === id))
+        .filter((t): t is KanbanTask => t != null);
+    }
+    return result;
+  }, [containerItems, safeTasks]);
 
   return {
     activeId,
     optimisticTasksByStatus,
     sensors,
+    collisionDetection,
     handleDragStart,
     handleDragOver,
     handleDragEnd,

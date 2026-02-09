@@ -4,7 +4,6 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { MobileKanban } from '@/components/mobile';
 import { 
   DndContext, 
-  closestCorners,
   DragOverlay,
   useDroppable,
 } from '@dnd-kit/core';
@@ -70,6 +69,7 @@ const Kanban: React.FC = () => {
     activeId,
     optimisticTasksByStatus,
     sensors,
+    collisionDetection,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
@@ -145,7 +145,7 @@ const Kanban: React.FC = () => {
       {/* Kanban Board */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={collisionDetection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}

@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   DndContext, 
-  closestCorners,
   DragOverlay,
   useDroppable,
 } from '@dnd-kit/core';
@@ -95,6 +94,7 @@ const MobileKanban: React.FC<MobileKanbanProps> = ({ isGlobal = false }) => {
     activeId,
     optimisticTasksByStatus,
     sensors,
+    collisionDetection,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
@@ -292,7 +292,7 @@ const MobileKanban: React.FC<MobileKanbanProps> = ({ isGlobal = false }) => {
       {/* Kanban Board con scroll horizontal */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={collisionDetection}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
